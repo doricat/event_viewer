@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C251D597-DEA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Viewer.Web", "src\Viewer.Web\Viewer.Web.csproj", "{CDDDC851-56E5-4D05-88F5-4A2827ABCAD0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logging.WebSocket", "src\Logging.WebSocket\Logging.WebSocket.csproj", "{B66AC827-42C3-45EA-A150-938E9CC0EEFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,12 +19,17 @@ Global
 		{CDDDC851-56E5-4D05-88F5-4A2827ABCAD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDDDC851-56E5-4D05-88F5-4A2827ABCAD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDDDC851-56E5-4D05-88F5-4A2827ABCAD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B66AC827-42C3-45EA-A150-938E9CC0EEFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B66AC827-42C3-45EA-A150-938E9CC0EEFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B66AC827-42C3-45EA-A150-938E9CC0EEFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B66AC827-42C3-45EA-A150-938E9CC0EEFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CDDDC851-56E5-4D05-88F5-4A2827ABCAD0} = {C251D597-DEA4-4991-992D-5725AAA38996}
+		{B66AC827-42C3-45EA-A150-938E9CC0EEFD} = {C251D597-DEA4-4991-992D-5725AAA38996}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {13E2A25A-C581-4EC9-BE3B-17C153369D92}
