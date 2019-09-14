@@ -1,26 +1,25 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { Route, Switch } from "react-router-dom";
+import { ConnectedRouter } from 'connected-react-router';
+import Home from './pages/Home';
+import NotFound from './pages/NotFound';
+import Event from './pages/Event';
+import Monitor from './pages/Monitor';
+import Application from './pages/Application';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+function App({ history }) {
+    return (
+        <ConnectedRouter history={history}>
+            <Switch>
+                <Route exact path="/" component={Home} />
+                <Route path="/event" component={Event} />
+                <Route path="/monitor" component={Monitor} />
+                <Route path="/application" component={Application} />
+                <Route component={NotFound} />
+            </Switch>
+        </ConnectedRouter>
+    );
 }
 
 export default App;
