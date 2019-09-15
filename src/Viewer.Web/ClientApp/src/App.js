@@ -7,6 +7,9 @@ import NotFound from './pages/NotFound';
 import Event from './pages/Event';
 import Monitor from './pages/Monitor';
 import Application from './pages/Application';
+import Login from './pages/Login';
+import Logout from './pages/Logout';
+import Register from './pages/Register';
 
 function App({ history }) {
     return (
@@ -16,6 +19,9 @@ function App({ history }) {
                 <Route path="/event" component={Event} />
                 <Route path="/monitor" component={Monitor} />
                 <Route path="/application" component={Application} />
+                <Route path="/login" component={Login} />
+                <Route path="/logout" component={Logout} />
+                <Route path="/register" component={Register} />
                 <Route component={NotFound} />
             </Switch>
         </ConnectedRouter>
