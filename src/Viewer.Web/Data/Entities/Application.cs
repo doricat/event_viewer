@@ -4,7 +4,7 @@ namespace Viewer.Web.Data.Entities
 {
     public class Application
     {
-        public string Id { get; set; }
+        public long Id { get; set; }
 
         public string ApplicationId { get; set; }
 

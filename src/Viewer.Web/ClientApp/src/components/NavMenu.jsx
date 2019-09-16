@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navbar, Nav } from 'react-bootstrap';
 import { Route, Link } from 'react-router-dom';
+import LoginMenu from './LoginMenu';
 
 const MenuLink = ({ label, to, activeOnlyWhenExact }) => (
     <Route
@@ -32,7 +33,7 @@ export default ({ fixed }) => {
                 <MenuLink to={"/monitor"} label={"监视器"} />
                 <MenuLink to={"/application"} label={"应用程序"} />
             </Nav>
-            <Link to={"/login"} className="btn btn-outline-primary">登录</Link>
+            <LoginMenu isAuthenticated={false} />
         </Navbar>
     );
 };

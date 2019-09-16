@@ -119,7 +119,7 @@ class RegisterForm extends React.Component {
                 {/* <Alert variant="success">message</Alert> */}
                 <Form.Group>
                     <Form.Label>电子邮件</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.email !== ""} type="email" disabled={this.state.isSubmitting} value={this.state.email} onChange={(x) => this.handleChange("email", x.target.value)} />
+                    <Form.Control isInvalid={this.state.errors.email !== ""} type="email" disabled={this.state.isSubmitting} value={this.state.email} onChange={(x) => this.handleChange("email", x.target.value)} autoComplete="off" />
                     <Form.Control.Feedback type="invalid">{this.state.errors.email}</Form.Control.Feedback>
                 </Form.Group>
 
