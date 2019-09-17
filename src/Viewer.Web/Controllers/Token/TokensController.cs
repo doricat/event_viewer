@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Token;
 using Viewer.Web.Data.Entities;
 
@@ -50,10 +51,10 @@ namespace Viewer.Web.Controllers
             {
                 var claimsPrincipal = await SignInManager.CreateUserPrincipalAsync(await UserManager.FindByEmailAsync(model.Username));
                 var token = CreateToken(claimsPrincipal.Identity);
-                return Ok(token);
+                return Ok(new ApiResult<string>(token));
             }
 
-            throw new NotImplementedException();
+            return BadRequest(new ApiError(ApiErrorCodes.BadArgument, "用户名或密码错误"));
         }
 
         [HttpGet]

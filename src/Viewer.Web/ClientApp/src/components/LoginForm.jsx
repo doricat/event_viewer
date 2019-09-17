@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import authorizeService from '../services/AuthorizeService';
 
 class LoginForm extends React.Component {
     constructor(props) {
@@ -12,9 +13,7 @@ class LoginForm extends React.Component {
             email: "",
             password: "",
             rememberMe: false,
-            apiResult: {
-                message: "test"
-            },
+            apiResult: null,
             errors: {
                 email: "",
                 password: ""
@@ -45,7 +44,27 @@ class LoginForm extends React.Component {
 
             this.setState({ errors: errors, validated: true });
         } else {
-            this.setState({ isSubmitting: true, validated: false });
+            this.setState({ isSubmitting: true, validated: false, apiResult: null });
+
+            authorizeService.signIn({
+                username: this.state.email,
+                password: this.state.password,
+                rememberMe: this.state.rememberMe
+            }).then(result => {
+                this.setState({ isSubmitting: false });
+                if (result.succeeded === true) {
+
+                } else {
+                    const { code, message } = result;
+                    this.setState({
+                        apiResult: {
+                            code,
+                            message
+                        },
+                        password: ""
+                    });
+                }
+            });
         }
     }
 
@@ -54,16 +73,22 @@ class LoginForm extends React.Component {
             <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
                 <h4>使用本地账户登录</h4>
                 <hr />
-                {/* <Alert variant="success">message</Alert> */}
+                {
+                    this.state.apiResult !== null
+                        ?
+                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
+                        :
+                        null
+                }
                 <Form.Group>
                     <Form.Label>电子邮件</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.email !== ""} required type="email" disabled={this.state.isSubmitting} onChange={(x) => this.handleChange("email", x.target.value)} autoComplete="off" />
+                    <Form.Control isInvalid={this.state.errors.email !== ""} required type="email" disabled={this.state.isSubmitting} onChange={(x) => this.handleChange("email", x.target.value)} value={this.state.email} autoComplete="off" />
                     <Form.Control.Feedback type="invalid">{this.state.errors.email}</Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group>
                     <Form.Label>密码</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.password !== ""} required type="password" disabled={this.state.isSubmitting} onChange={(x) => this.handleChange("password", x.target.value)} />
+                    <Form.Control isInvalid={this.state.errors.password !== ""} required type="password" disabled={this.state.isSubmitting} onChange={(x) => this.handleChange("password", x.target.value)} value={this.state.password} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.password}</Form.Control.Feedback>
                 </Form.Group>
 

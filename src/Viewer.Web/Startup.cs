@@ -52,6 +52,15 @@ namespace Viewer.Web
                         ValidateAudience = false
                     };
                 });
+
+            services.AddCors(options => options.AddPolicy("CorsPolicy",
+                builder =>
+                {
+                    builder.AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .WithOrigins("http://localhost:13001")
+                        .AllowCredentials();
+                }));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -72,6 +81,8 @@ namespace Viewer.Web
             app.UseSpaStaticFiles();
 
             app.UseAuthentication();
+
+            app.UseCors("CorsPolicy");
 
             app.UseMvc(routes =>
             {
