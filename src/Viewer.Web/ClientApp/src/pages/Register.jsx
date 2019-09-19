@@ -14,7 +14,7 @@ class Register extends React.Component {
     }
 
     navigate() {
-        this.props.push("/login");
+        this.props.push("/account/login");
     }
 
     render() {

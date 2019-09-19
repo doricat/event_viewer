@@ -54,7 +54,7 @@ namespace Viewer.Web.Controllers
             }
 
             Logger.LogInformation("用户登录失败。");
-            return BadRequest(new ApiError(ApiErrorCodes.BadArgument, "用户名或密码错误"));
+            return BadRequest(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "用户名或密码错误")));
         }
 
         private string CreateToken(IIdentity identity)

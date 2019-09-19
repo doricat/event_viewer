@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,7 @@ namespace Viewer.Web.Controllers
 
         public RoleManager<Role> RoleManager { get; }
 
+        [Authorize]
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {

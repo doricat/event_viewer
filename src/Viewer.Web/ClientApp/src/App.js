@@ -9,7 +9,6 @@ import Event from './pages/Event';
 import Monitor from './pages/Monitor';
 import Application from './pages/Application';
 import Login from './pages/Login';
-import Logout from './pages/Logout';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
@@ -23,11 +22,10 @@ function App({ history }) {
                     <Route path="/event" component={Event} />
                     <Route path="/monitor" component={Monitor} />
                     <Route path="/application" component={Application} />
-                    <Route path="/login" component={Login} />
-                    <Route path="/logout" component={Logout} />
-                    <Route path="/register" component={Register} />
-                    <Route path="/profile" component={Profile} />
-                    <Route path="/settings" component={Settings} />
+                    <Route path="/account/login" component={Login} />
+                    <Route path="/account/register" component={Register} />
+                    <Route path="/account/profile" component={Profile} />
+                    <Route path="/account/settings" component={Settings} />
                     <Route component={NotFound} />
                 </Switch>
             </Layout>

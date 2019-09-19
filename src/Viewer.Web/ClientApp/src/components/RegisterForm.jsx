@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-import { required, regexExpression, maxLength, stringLength, compare } from '../services/validators';
+import { required, regexExpression, maxLength, stringLength, compare, validate } from '../services/validators';
 
 const descriptor = {
     email: {
@@ -48,60 +48,40 @@ class RegisterForm extends React.Component {
     handleChange(key, value) {
         let obj = {};
         obj[key] = value;
-
-        let errors = { ...this.state.errors };
-
-        for (const prop in descriptor[key].validators) {
-            if (descriptor[key].validators.hasOwnProperty(prop)) {
-                const validator = descriptor[key].validators[prop];
-                var result = validator(value, this.state);
-                if (!result.succeeded) {
-                    errors[key] = result.message;
-                    break;
-                }
-
-                errors[key] = null;
-            }
-        }
-
-        obj.errors = errors;
         this.setState(obj);
     }
 
     handleSubmit(event) {
         event.preventDefault();
 
-        let hasError = false;
-        let errors = { ...this.state.errors };
         const { email, password, confirmPassword } = this.state;
         const model = { email, password, confirmPassword };
-        for (const key in model) {
-            if (model.hasOwnProperty(key)) {
-                const value = model[key];
+        const result = validate(model, descriptor);
 
-                for (const prop in descriptor[key].validators) {
-                    if (descriptor[key].validators.hasOwnProperty(prop)) {
-                        const validator = descriptor[key].validators[prop];
-                        var result = validator(value, model);
-                        if (!result.succeeded) {
-                            errors[key] = result.message;
-                            hasError = true;
-                            break;
-                        }
-
-                        errors[key] = null;
-                    }
-                }
-            }
-        }
-
-        if (hasError) {
+        if (result.hasError) {
+            let errors = { ...this.state.errors };
+            result.copyMessages(result, errors);
             this.setState({ errors: errors });
             return;
         }
 
         this.setState({ isSubmitting: true, apiResult: null });
         this.fetchRegister(model);
+    }
+
+    handleValidate(key) {
+        const { email, password, confirmPassword } = this.state;
+        const model = { email, password, confirmPassword };
+        const result = validate(model, descriptor);
+
+        let errors = { ...this.state.errors };
+        if (result.hasError) {
+            errors[key] = result[key];
+        } else {
+            errors[key] = null;
+        }
+
+        this.setState({ errors: errors });
     }
 
     async fetchRegister(model) {
@@ -158,19 +138,32 @@ class RegisterForm extends React.Component {
                 }
                 <Form.Group>
                     <Form.Label>电子邮件</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.email} type="email" disabled={this.state.isSubmitting} value={this.state.email} onChange={(x) => this.handleChange("email", x.target.value)} autoComplete="off" />
+                    <Form.Control isInvalid={this.state.errors.email} type="email"
+                        disabled={this.state.isSubmitting}
+                        value={this.state.email}
+                        onChange={(x) => this.handleChange("email", x.target.value)}
+                        onBlur={() => this.handleValidate("email")}
+                        autoComplete="off" />
                     <Form.Control.Feedback type="invalid">{this.state.errors.email}</Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group>
                     <Form.Label>密码</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.password} type="password" disabled={this.state.isSubmitting} value={this.state.password} onChange={(x) => this.handleChange("password", x.target.value)} />
+                    <Form.Control isInvalid={this.state.errors.password} type="password"
+                        disabled={this.state.isSubmitting}
+                        value={this.state.password}
+                        onChange={(x) => this.handleChange("password", x.target.value)}
+                        onBlur={() => this.handleValidate("password")} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.password}</Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group>
                     <Form.Label>确认密码</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.confirmPassword} type="password" disabled={this.state.isSubmitting} value={this.state.confirmPassword} onChange={(x) => this.handleChange("confirmPassword", x.target.value)} />
+                    <Form.Control isInvalid={this.state.errors.confirmPassword} type="password"
+                        disabled={this.state.isSubmitting}
+                        value={this.state.confirmPassword}
+                        onChange={(x) => this.handleChange("confirmPassword", x.target.value)}
+                        onBlur={() => this.handleValidate("confirmPassword")} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.confirmPassword}</Form.Control.Feedback>
                 </Form.Group>
 

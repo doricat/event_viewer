@@ -48,10 +48,10 @@ class LoginMenu extends React.Component {
         if (isAuthenticated === true) {
             menu = (
                 <NavDropdown alignRight title={username} onToggle={(isOpen, event, metadata) => this.handleToggle(isOpen, event, metadata)} show={this.state.dropdownShow}>
-                    <Link className="dropdown-item" to={"/profile"} onClick={() => this.closeDropdown()}>个人资料</Link>
-                    <Link className="dropdown-item" to={"/settings"} onClick={() => this.closeDropdown()}>设置</Link>
+                    <Link className="dropdown-item" to={"/account/profile"} onClick={() => this.closeDropdown()}>个人资料</Link>
+                    <Link className="dropdown-item" to={"/account/settings"} onClick={() => this.closeDropdown()}>设置</Link>
                     <NavDropdown.Divider />
-                    <button className="dropdown-item btn" type="button">退出</button>
+                    <Link className="dropdown-item" to={"/"} onClick={() => { authorizeService.signOut(); this.closeDropdown(); }}>退出</Link>
                 </NavDropdown>
             );
         }
@@ -59,10 +59,10 @@ class LoginMenu extends React.Component {
             menu = (
                 <>
                     <li className="nav-item">
-                        <Link className="nav-link" to={"/register"}>注册</Link>
+                        <Link className="nav-link" to={"/account/register"}>注册</Link>
                     </li>
                     <li className="nav-item">
-                        <Link className="nav-link" to={"/login"}>登录</Link>
+                        <Link className="nav-link" to={"/account/login"}>登录</Link>
                     </li>
                 </>
             );

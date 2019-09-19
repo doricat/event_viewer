@@ -71,3 +71,39 @@ export const compare = (value, anotherName, valueObj, name, descriptor) => {
         succeeded: true
     };
 };
+
+const copyMessages = (validationResult, target, ignoredProps) => {
+    for (const key in validationResult) {
+        if (validationResult.hasOwnProperty(key) && ignoredProps.findIndex(x => x === key) === -1) {
+            const message = validationResult[key];
+            target[key] = message;
+        }
+    }
+};
+
+export const validate = (model, descriptor) => {
+    let validationResult = {
+        hasError: false,
+        copyMessages: (validationResult, target) => copyMessages(validationResult, target, ["hasError", "copyMessages"])
+    };
+
+    for (const key in model) {
+        if (model.hasOwnProperty(key)) {
+            const value = model[key];
+            const validators = descriptor[key].validators;
+
+            for (let i = 0; i < validators.length; i++) {
+                const validator = validators[i];
+                const result = validator(value, model);
+
+                if (!result.succeeded) {
+                    validationResult[key] = result.message;
+                    validationResult.hasError = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    return validationResult;
+};
