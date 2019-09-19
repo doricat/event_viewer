@@ -33,7 +33,7 @@ export default ({ fixed }) => {
                 <MenuLink to={"/monitor"} label={"监视器"} />
                 <MenuLink to={"/application"} label={"应用程序"} />
             </Nav>
-            <LoginMenu isAuthenticated={false} />
+            <LoginMenu />
         </Navbar>
     );
 };

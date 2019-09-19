@@ -44,6 +44,7 @@ export class AuthorizeService {
             // {value: token}
             this._token = json.value;
 
+            localStorage.removeItem("accessToken");
             if (state.rememberMe === true) {
                 localStorage.setItem("accessToken", json.value);
             }

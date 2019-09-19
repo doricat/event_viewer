@@ -5,8 +5,6 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -46,22 +44,17 @@ namespace Viewer.Web.Controllers
         {
             await HttpContext.SignOutAsync();
 
-            var result = await SignInManager.PasswordSignInAsync(model.Username, model.Password, false, true);
+            var result = await SignInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
             if (result.Succeeded)
             {
+                Logger.LogInformation("用户登录成功。");
                 var claimsPrincipal = await SignInManager.CreateUserPrincipalAsync(await UserManager.FindByEmailAsync(model.Username));
                 var token = CreateToken(claimsPrincipal.Identity);
                 return Ok(new ApiResult<string>(token));
             }
 
+            Logger.LogInformation("用户登录失败。");
             return BadRequest(new ApiError(ApiErrorCodes.BadArgument, "用户名或密码错误"));
-        }
-
-        [HttpGet]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public IActionResult Get()
-        {
-            return Ok(User.Claims);
         }
 
         private string CreateToken(IIdentity identity)

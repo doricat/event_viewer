@@ -9,14 +9,13 @@ class LoginForm extends React.Component {
 
         this.state = {
             isSubmitting: false,
-            validated: false,
             email: "",
             password: "",
             rememberMe: false,
             apiResult: null,
-            errors: {
-                email: "",
-                password: ""
+            invalid: {
+                email: false,
+                password: false
             }
         };
     }
@@ -24,48 +23,49 @@ class LoginForm extends React.Component {
     handleChange(key, value) {
         let obj = {};
         obj[key] = value;
+
+        let invalid = { ...this.state.invalid };
+        invalid[key] = value === "";
+
+        obj.invalid = invalid;
+
         this.setState(obj);
     }
 
     handleSubmit(event) {
         event.preventDefault();
-        const form = event.currentTarget;
-        if (form.checkValidity() === false) {
-            event.stopPropagation();
 
-            let errors = { ...this.state.errors };
-            if (this.state.email.trim() === "") {
-                errors.email = "请输入电子邮件";
-            }
+        const { email, password } = this.state;
+        let invalid = { ...this.state.invalid };
+        invalid.email = email === "";
+        invalid.password = password === "";
 
-            if (this.state.password.trim() === "") {
-                errors.password = "请输入密码";
-            }
-
-            this.setState({ errors: errors, validated: true });
-        } else {
-            this.setState({ isSubmitting: true, validated: false, apiResult: null });
-
-            authorizeService.signIn({
-                username: this.state.email,
-                password: this.state.password,
-                rememberMe: this.state.rememberMe
-            }).then(result => {
-                this.setState({ isSubmitting: false });
-                if (result.succeeded === true) {
-
-                } else {
-                    const { code, message } = result;
-                    this.setState({
-                        apiResult: {
-                            code,
-                            message
-                        },
-                        password: ""
-                    });
-                }
-            });
+        if (invalid.email || invalid.password) {
+            this.setState({ invalid: invalid });
+            return;
         }
+
+        this.setState({ isSubmitting: true, apiResult: null });
+
+        authorizeService.signIn({
+            username: this.state.email,
+            password: this.state.password,
+            rememberMe: this.state.rememberMe
+        }).then(result => {
+            this.setState({ isSubmitting: false });
+            if (result.succeeded === true) {
+                this.props.navigate();
+            } else {
+                const { code, message } = result;
+                this.setState({
+                    apiResult: {
+                        code,
+                        message
+                    },
+                    password: ""
+                });
+            }
+        });
     }
 
     render() {
@@ -82,14 +82,12 @@ class LoginForm extends React.Component {
                 }
                 <Form.Group>
                     <Form.Label>电子邮件</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.email !== ""} required type="email" disabled={this.state.isSubmitting} onChange={(x) => this.handleChange("email", x.target.value)} value={this.state.email} autoComplete="off" />
-                    <Form.Control.Feedback type="invalid">{this.state.errors.email}</Form.Control.Feedback>
+                    <Form.Control isInvalid={this.state.invalid.email} type="email" disabled={this.state.isSubmitting} onChange={(x) => this.handleChange("email", x.target.value)} value={this.state.email} autoComplete="off" />
                 </Form.Group>
 
                 <Form.Group>
                     <Form.Label>密码</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.password !== ""} required type="password" disabled={this.state.isSubmitting} onChange={(x) => this.handleChange("password", x.target.value)} value={this.state.password} />
-                    <Form.Control.Feedback type="invalid">{this.state.errors.password}</Form.Control.Feedback>
+                    <Form.Control isInvalid={this.state.invalid.password} type="password" disabled={this.state.isSubmitting} onChange={(x) => this.handleChange("password", x.target.value)} value={this.state.password} />
                 </Form.Group>
 
                 <Form.Group >
