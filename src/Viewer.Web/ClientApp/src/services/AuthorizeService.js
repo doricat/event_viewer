@@ -5,6 +5,15 @@ export class AuthorizeService {
     _isAuthenticated = false;
     _token = null;
 
+    constructor() {
+        const token = localStorage.getItem("accessToken");
+        this._token = token;
+        if (token) {
+            this._user = JSON.parse(window.atob(token.split(".")[1]));
+            this._isAuthenticated = !!this._user;
+        }
+    }
+
     isAuthenticated() {
         return this._isAuthenticated;
     }
@@ -14,15 +23,6 @@ export class AuthorizeService {
     }
 
     getAccessToken() {
-        if (this._token === null) {
-            const token = localStorage.getItem("accessToken");
-            if (token) {
-                this._token = token;
-            }
-
-            return "";
-        }
-
         return this._token;
     }
 

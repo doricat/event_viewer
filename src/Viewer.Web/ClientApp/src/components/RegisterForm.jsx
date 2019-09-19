@@ -1,5 +1,31 @@
 import React from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
+import { required, regexExpression, maxLength, stringLength, compare } from '../services/validators';
+
+const descriptor = {
+    email: {
+        displayName: "电子邮件地址",
+        validators: [
+            (value) => required(value, descriptor.email.displayName),
+            (value) => regexExpression(value, "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", descriptor.email.displayName),
+            (value) => maxLength(value, descriptor.email.displayName)
+        ]
+    },
+    password: {
+        displayName: "密码",
+        validators: [
+            (value) => required(value, descriptor.password.displayName),
+            (value) => stringLength(value, 6, 16, descriptor.password.displayName)
+        ]
+    },
+    confirmPassword: {
+        displayName: "确认密码",
+        validators: [
+            (value) => required(value, descriptor.confirmPassword.displayName),
+            (value, valueObj) => compare(value, "password", valueObj, descriptor.confirmPassword.displayName, descriptor)
+        ]
+    }
+};
 
 class RegisterForm extends React.Component {
     constructor(props) {
@@ -10,10 +36,11 @@ class RegisterForm extends React.Component {
             email: "",
             password: "",
             confirmPassword: "",
+            apiResult: null,
             errors: {
-                email: "",
-                password: "",
-                confirmPassword: ""
+                email: null,
+                password: null,
+                confirmPassword: null
             }
         };
     }
@@ -21,94 +48,100 @@ class RegisterForm extends React.Component {
     handleChange(key, value) {
         let obj = {};
         obj[key] = value;
-        this.setState(obj);
 
         let errors = { ...this.state.errors };
-        switch (key) {
-            case "email":
-                if (value === "") {
-                    errors.email = "请输入电子邮件";
-                } else {
-                    if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) {
-                        errors.email = "请输入正确的电子邮件地址";
-                    } else {
-                        errors.email = "";
-                    }
+
+        for (const prop in descriptor[key].validators) {
+            if (descriptor[key].validators.hasOwnProperty(prop)) {
+                const validator = descriptor[key].validators[prop];
+                var result = validator(value, this.state);
+                if (!result.succeeded) {
+                    errors[key] = result.message;
+                    break;
                 }
-                break;
 
-            case "password":
-                if (value === "") {
-                    errors.password = "请输入密码";
-                } else {
-                    if (value.length < 6) {
-                        errors.password = "密码长度不得小于6个字符";
-                    } else if (value.length > 16) {
-                        errors.password = "密码长度不得大于16个字符";
-                    } else {
-                        errors.password = "";
-                    }
-
-                    if (this.state.confirmPassword !== "" && this.state.confirmPassword !== value) {
-                        errors.confirmPassword = "两次输入的密码不匹配";
-                    } else {
-                        errors.confirmPassword = "";
-                    }
-                }
-                break;
-
-            case "confirmPassword":
-                if (value === "") {
-                    errors.confirmPassword = "请再次输入密码";
-                } else {
-                    if (this.state.password !== value) {
-                        errors.confirmPassword = "两次输入的密码不匹配";
-                    } else {
-                        errors.confirmPassword = "";
-                    }
-                }
-                break;
-
-            default:
-                break;
+                errors[key] = null;
+            }
         }
-        this.setState({ errors: errors });
+
+        obj.errors = errors;
+        this.setState(obj);
     }
 
     handleSubmit(event) {
         event.preventDefault();
 
-        let flag = false;
+        let hasError = false;
         let errors = { ...this.state.errors };
         const { email, password, confirmPassword } = this.state;
-        if (email.trim() === "") {
-            errors.email = "请输入电子邮件";
-            flag = true;
+        const model = { email, password, confirmPassword };
+        for (const key in model) {
+            if (model.hasOwnProperty(key)) {
+                const value = model[key];
+
+                for (const prop in descriptor[key].validators) {
+                    if (descriptor[key].validators.hasOwnProperty(prop)) {
+                        const validator = descriptor[key].validators[prop];
+                        var result = validator(value, model);
+                        if (!result.succeeded) {
+                            errors[key] = result.message;
+                            hasError = true;
+                            break;
+                        }
+
+                        errors[key] = null;
+                    }
+                }
+            }
         }
 
-        if (password.trim() === "") {
-            errors.password = "请输入密码";
-            flag = true;
-        } else {
-            errors.password = "";
-        }
-
-        if (confirmPassword.trim() === "") {
-            errors.confirmPassword = "请再次输入密码";
-            flag = true;
-        }
-
-        this.setState({ errors: errors });
-
-        if (flag === true) {
+        if (hasError) {
+            this.setState({ errors: errors });
             return;
         }
 
-        this.setState({ isSubmitting: true });
+        this.setState({ isSubmitting: true, apiResult: null });
+        this.fetchRegister(model);
     }
 
-    validate() {
+    async fetchRegister(model) {
+        const response = await fetch("/api/accounts", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(model)
+        });
 
+        const json = await response.json();
+        // return response.ok === true ? { succeeded: true } : { succeeded: false, ...json.error };
+        this.setState({ isSubmitting: false });
+
+        if (response.ok === true) {
+            this.props.navigate();
+        } else {
+            const { code, message, details } = json.error;
+            let errors = { ...this.state.errors };
+            for (let i = 0; i < details.length; i++) {
+                const detail = details[i];
+                // {
+                //  "code": "",
+                //  "message": "",
+                //  "target": ""
+                // }
+                if (detail.target && errors.hasOwnProperty(detail.target)) {
+                    errors[detail.target] = detail.message;
+                }
+            }
+
+            this.setState({
+                apiResult: {
+                    code,
+                    message
+                },
+                errors: errors
+            });
+        }
     }
 
     render() {
@@ -116,22 +149,28 @@ class RegisterForm extends React.Component {
             <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
                 <h4>创建一个新账户</h4>
                 <hr />
-                {/* <Alert variant="success">message</Alert> */}
+                {
+                    this.state.apiResult !== null
+                        ?
+                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
+                        :
+                        null
+                }
                 <Form.Group>
                     <Form.Label>电子邮件</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.email !== ""} type="email" disabled={this.state.isSubmitting} value={this.state.email} onChange={(x) => this.handleChange("email", x.target.value)} autoComplete="off" />
+                    <Form.Control isInvalid={this.state.errors.email} type="email" disabled={this.state.isSubmitting} value={this.state.email} onChange={(x) => this.handleChange("email", x.target.value)} autoComplete="off" />
                     <Form.Control.Feedback type="invalid">{this.state.errors.email}</Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group>
                     <Form.Label>密码</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.password !== ""} type="password" disabled={this.state.isSubmitting} value={this.state.password} onChange={(x) => this.handleChange("password", x.target.value)} />
+                    <Form.Control isInvalid={this.state.errors.password} type="password" disabled={this.state.isSubmitting} value={this.state.password} onChange={(x) => this.handleChange("password", x.target.value)} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.password}</Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group>
                     <Form.Label>确认密码</Form.Label>
-                    <Form.Control isInvalid={this.state.errors.confirmPassword !== ""} type="password" disabled={this.state.isSubmitting} value={this.state.confirmPassword} onChange={(x) => this.handleChange("confirmPassword", x.target.value)} />
+                    <Form.Control isInvalid={this.state.errors.confirmPassword} type="password" disabled={this.state.isSubmitting} value={this.state.confirmPassword} onChange={(x) => this.handleChange("confirmPassword", x.target.value)} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.confirmPassword}</Form.Control.Feedback>
                 </Form.Group>
 

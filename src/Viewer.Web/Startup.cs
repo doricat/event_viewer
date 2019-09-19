@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
+using Viewer.Web.Extensions;
+using Viewer.Web.Utilities;
 
 namespace Viewer.Web
 {
@@ -23,7 +25,10 @@ namespace Viewer.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(options => { options.Filters.Add<ApiModelStateCheckFilterAttribute>(); }).ConfigureApiBehaviorOptions(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
 
@@ -60,6 +65,9 @@ namespace Viewer.Web
                         .WithOrigins("http://localhost:13001")
                         .AllowCredentials();
                 }));
+
+            services.Configure<IdentityGeneratorOptions>(x => x.MachineTag = 1);
+            services.AddSingleton<IdentityGenerator>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

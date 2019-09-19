@@ -1,6 +1,8 @@
 import React from 'react';
 import { Row, Col } from 'react-bootstrap';
 import RegisterForm from '../components/RegisterForm';
+import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
 
 class Register extends React.Component {
     constructor(props) {
@@ -11,12 +13,16 @@ class Register extends React.Component {
         };
     }
 
+    navigate() {
+        this.props.push("/login");
+    }
+
     render() {
         return (
             <Row>
                 <Col md={4}>
                     <section>
-                        <RegisterForm />
+                        <RegisterForm navigate={() => this.navigate()} />
                     </section>
                 </Col>
 
@@ -26,4 +32,4 @@ class Register extends React.Component {
     }
 }
 
-export default Register;
+export default connect(null, { push })(Register);
