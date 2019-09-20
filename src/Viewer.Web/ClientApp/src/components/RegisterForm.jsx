@@ -8,7 +8,7 @@ const descriptor = {
         validators: [
             (value) => required(value, descriptor.email.displayName),
             (value) => regexExpression(value, "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", descriptor.email.displayName),
-            (value) => maxLength(value, descriptor.email.displayName)
+            (value) => maxLength(value, 120, descriptor.email.displayName)
         ]
     },
     password: {

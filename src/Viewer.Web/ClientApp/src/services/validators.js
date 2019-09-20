@@ -11,11 +11,11 @@ export const required = (value, name) => {
     };
 };
 
-export const regexExpression = (value, pattern, name) => {
+export const regexExpression = (value, pattern, name, message) => {
     const reg = new RegExp(pattern, "i")
     if (!reg.test(value)) {
         return {
-            message: `${name}格式不正确`,
+            message: message || `${name}格式不正确`,
             succeeded: false
         };
     }

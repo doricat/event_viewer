@@ -1,10 +1,14 @@
 import React from 'react';
 import { Alert } from 'react-bootstrap';
+import { Route, Switch } from 'react-router-dom';
+import SettingsLayout from '../components/SettingsLayout';
 
 export default () => {
     return (
-        <Alert variant="info">
-            建设中
-        </Alert>
+        <SettingsLayout>
+            <Switch>
+                
+            </Switch>
+        </SettingsLayout>
     );
 };

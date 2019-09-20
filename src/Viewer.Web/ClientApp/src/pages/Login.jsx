@@ -5,14 +5,6 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 
 class Login extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            message: undefined
-        };
-    }
-
     navigate() {
         this.props.push("/");
     }
