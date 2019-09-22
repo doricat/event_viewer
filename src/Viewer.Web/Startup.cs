@@ -68,6 +68,8 @@ namespace Viewer.Web
 
             services.Configure<IdentityGeneratorOptions>(x => x.MachineTag = 1);
             services.AddSingleton<IdentityGenerator>();
+            services.AddScoped<ApplicationManager>();
+            services.AddScoped<IApplicationStore, ApplicationStore>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

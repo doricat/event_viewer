@@ -12,6 +12,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import Unauthorized from './pages/Unauthorized';
 
 function App({ history }) {
     return (
@@ -26,6 +27,7 @@ function App({ history }) {
                     <Route path="/account/register" component={Register} />
                     <Route path="/account/profile" component={Profile} />
                     <Route path="/account/settings" component={Settings} />
+                    <Route path="/unauthorized" component={Unauthorized} />
                     <Route component={NotFound} />
                 </Switch>
             </Layout>

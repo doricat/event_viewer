@@ -1,6 +1,7 @@
 import React from 'react';
-import { ListGroup } from 'react-bootstrap';
+import { ListGroup, Alert } from 'react-bootstrap';
 import { Route, Link } from 'react-router-dom';
+import { loading } from './Loading';
 
 const MenuLink = ({ label, to, activeOnlyWhenExact }) => {
     const pathname = typeof to === "object" ? to.pathname : to;
@@ -18,7 +19,7 @@ const MenuLink = ({ label, to, activeOnlyWhenExact }) => {
     );
 };
 
-const ApplicationManagingMenu = ({ applications = [] }) => {
+export const ApplicationManagingMenu = ({ applications = [] }) => {
     return (
         <ListGroup>
             {applications.map((x) => {
@@ -34,4 +35,6 @@ const ApplicationManagingMenu = ({ applications = [] }) => {
     );
 };
 
-export default ApplicationManagingMenu;
+export default loading(ApplicationManagingMenu, () => {
+    return <Alert variant="info"><i>加载中...</i></Alert>;
+});

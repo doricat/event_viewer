@@ -1,6 +1,8 @@
 import React from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { required, regexExpression, maxLength, stringLength, validate } from '../services/validators';
+import { actions as applicationActions } from '../store/application';
+import { connect } from 'react-redux';
 
 const descriptor = {
     appName: {
@@ -75,6 +77,43 @@ class ApplicationEditingForm extends React.Component {
         }
 
         this.setState({ isSubmitting: true, apiResult: null });
+
+        if (this.props.application) {
+
+        } else {
+            this.props.dispatch(applicationActions.fetchCreateApplication(
+                {
+                    ...model,
+                    enabled: this.state.enabled
+                },
+                error => {
+                    const { code, message, details } = error;
+                    let errors = { ...this.state.errors };
+                    for (let i = 0; i < details.length; i++) {
+                        const detail = details[i];
+                        // {
+                        //  "code": "",
+                        //  "message": "",
+                        //  "target": ""
+                        // }
+                        if (detail.target && errors.hasOwnProperty(detail.target)) {
+                            errors[detail.target] = detail.message;
+                        }
+                    }
+
+                    this.setState({
+                        apiResult: {
+                            code,
+                            message
+                        },
+                        errors: errors
+                    });
+                },
+                () => {
+                    this.props.cancel();
+                })
+            );
+        }
     }
 
     handleValidate(key) {
@@ -153,4 +192,4 @@ class ApplicationEditingForm extends React.Component {
     }
 }
 
-export default ApplicationEditingForm;
+export default connect()(ApplicationEditingForm);

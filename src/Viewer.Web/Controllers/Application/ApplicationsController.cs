@@ -37,8 +37,10 @@ namespace Viewer.Web.Controllers
         [HttpGet]
         public Task<IActionResult> Get()
         {
-            var listTask = ApplicationManager.Applications.OrderBy(x => x.Id).ToListAsync(HttpContext.RequestAborted);
-            var countTask = ApplicationManager.Applications.CountAsync(HttpContext.RequestAborted);
+            var isAdmin = User.IsInRole("admin");
+            var query = isAdmin ? ApplicationManager.Applications : ApplicationManager.Applications.Where(x => x.Enabled);
+            var listTask = query.OrderBy(x => x.Id).ToListAsync(HttpContext.RequestAborted);
+            var countTask = query.CountAsync(HttpContext.RequestAborted);
 
             Task.WaitAll(listTask, countTask);
 
@@ -50,14 +52,32 @@ namespace Viewer.Web.Controllers
                         AppId = x.ApplicationId,
                         Name = x.Name,
                         Enabled = x.Enabled,
-                        Description = x.Description,
+                        Description = x.Description
                     }).ToList()) {Count = countTask.Result}));
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(string id)
+        public async Task<IActionResult> Get(string id)
         {
-            throw new NotImplementedException();
+            var (app, count) = await ApplicationManager.FindDetailByIdAsync(id);
+            if (app == null)
+            {
+                Logger.LogWarning($"找不到指定的应用程序 {id}");
+                return NotFound();
+            }
+
+            var result = new ApplicationDetailGetOutputModel
+            {
+                Id = app.Id,
+                AppId = app.ApplicationId,
+                Name = app.Name,
+                Enabled = app.Enabled,
+                Description = app.Description,
+                EventCount = count,
+                UserList = app.Users.Select(x => x.UserId).ToList()
+            };
+
+            return Ok(new ApiResult<ApplicationDetailGetOutputModel>(result));
         }
 
         [HttpGet("{id}/events")]
@@ -67,7 +87,7 @@ namespace Viewer.Web.Controllers
         }
 
         [HttpGet("{id}/events/summaries/{level}")]
-        public IActionResult Get(string id, string level)
+        public IActionResult Get(string id, [FromRoute] string level)
         {
             throw new NotImplementedException();
         }
@@ -97,15 +117,48 @@ namespace Viewer.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(string id)
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Put(string id, [FromBody] ApplicationPostModel model)
         {
-            throw new NotImplementedException();
+            var app = await ApplicationManager.FindByIdAsync(id);
+            if (app != null)
+            {
+                app.Name = model.Name;
+                app.ApplicationId = model.Id;
+                app.Description = model.Description;
+                app.Enabled = model.Enabled;
+
+                var result = await ApplicationManager.UpdateAsync(app);
+
+                if (result.Succeeded)
+                {
+                    return NoContent();
+                }
+
+                throw new NotImplementedException();
+            }
+
+            Logger.LogWarning($"找不到指定的应用程序 {id}");
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Delete(string id)
         {
-            throw new NotImplementedException();
+            var app = await ApplicationManager.FindByIdAsync(id);
+            if (app != null)
+            {
+                var result = await ApplicationManager.RemoveApplicationAsync(app);
+                if (result.Succeeded)
+                {
+                    return NoContent();
+                }
+
+                throw new NotImplementedException();
+            }
+
+            return NoContent();
         }
     }
 
@@ -140,5 +193,12 @@ namespace Viewer.Web.Controllers
         public string Description { get; set; }
 
         public bool Enabled { get; set; }
+    }
+
+    public class ApplicationDetailGetOutputModel : ApplicationGetOutputModel
+    {
+        public int EventCount { get; set; }
+
+        public IList<long> UserList { get; set; }
     }
 }

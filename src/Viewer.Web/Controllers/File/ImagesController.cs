@@ -24,7 +24,10 @@ namespace Viewer.Web.Controllers
         {
             var metadata = await FileManager.FindByIdAsync(id);
             if (metadata == null)
+            {
+                Logger.LogWarning($"找不到文件 {id}");
                 return NotFound();
+            }
 
             return File(metadata.Filename, metadata.ContentType);
         }
