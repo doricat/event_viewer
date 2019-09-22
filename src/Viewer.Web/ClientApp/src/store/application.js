@@ -4,6 +4,7 @@ import { actions as uiActions } from './ui';
 
 const replaceApplications = "application_replace_all";
 const appendApplicationToList = "application_append_application_to_list";
+const replaceApplicationDetail = "application_replace_detail";
 
 const initState = {
     list: [
@@ -14,7 +15,8 @@ const initState = {
         //     description: "",
         //     enabled: true
         // }
-    ]
+    ],
+    detail: null
 };
 
 export const actions = {
@@ -32,6 +34,12 @@ export const actions = {
             payload: app
         };
     },
+    replaceApplicationDetail: (app) => {
+        return {
+            type: replaceApplicationDetail,
+            payload: app
+        };
+    },
     fetchGetApplications: () => async (dispatch) => {
         dispatch(uiActions.setApplicationListLoadingState(true));
 
@@ -39,21 +47,21 @@ export const actions = {
         const response = await fetch("/api/applications", {
             headers: !token ? {} : { "Authorization": `Bearer ${token}` }
         });
-        const json = await response.json();
 
         dispatch(uiActions.setApplicationListLoadingState(false));
 
+        if (response.status === 401) {
+            authorizeService.signOut();
+            dispatch(push("/account/login"));
+            return;
+        }
+
+        const json = await response.json();
         if (response.ok === true) {
             dispatch(actions.replaceApplications(json.value));
         } else {
-            if (response.status === 401) {
-                authorizeService.signOut();
-                dispatch(push("/account/login"));
-                return;
-            }
-
             if (response.status === 500) {
-                dispatch(uiActions.setApplicationListLoadingState(true, json.error.message));
+                dispatch(uiActions.setGlobalError(true, json.error.message));
             }
         }
     },
@@ -74,31 +82,104 @@ export const actions = {
                 })
             });
 
+        if (response.status === 401) {
+            authorizeService.signOut();
+            dispatch(push("/account/login"));
+            return;
+        }
+
+        if (response.status === 403) {
+            dispatch(push("/unauthorized"));
+            return;
+        }
+
+        const json = await response.json();
         if (response.ok === true) {
+            dispatch(actions.appendApplicationToList({
+                ...app,
+                id: json.value.id,
+                name: app.appName,
+            }));
+
             if (navCallback) {
                 navCallback();
             } else {
                 dispatch(push("/application"));
             }
         } else {
-            const json = await response.json();
             if (response.status === 400) {
                 badRequestCallback(json.error);
                 return;
             }
 
-            if (response.status === 401) {
-                if (authorizeService.isAuthenticated() === true) {
-                    dispatch(push("/unauthorized"));
-                } else {
-                    dispatch(push("/account/login"));
-                }
-                return;
-            }
-
             if (response.status === 500) {
-                dispatch(uiActions.setApplicationListLoadingState(true, json.error.message));
+                dispatch(uiActions.setGlobalError(true, json.error.message));
             }
+        }
+    },
+    fetchLoadApplicationDetail: (id, showLoading) => async (dispatch) => {
+        if (showLoading === true) {
+            dispatch(uiActions.setApplicationDetailLoadingState(true));
+        }
+
+        const token = await authorizeService.getAccessToken();
+        const response = await fetch(`/api/applications/${id}`, {
+            headers: !token ? {} : { "Authorization": `Bearer ${token}` }
+        });
+
+        if (showLoading === true) {
+            dispatch(uiActions.setApplicationDetailLoadingState(false));
+        }
+
+        if (response.status === 401) {
+            authorizeService.signOut();
+            dispatch(push("/account/login"));
+            return;
+        }
+
+        if (response.status === 404) {
+            dispatch(push("/404"));
+            return;
+        }
+
+        const json = await response.json();
+        if (response.ok === true) {
+            dispatch(actions.replaceApplicationDetail({
+                ...json.value,
+                appName: json.value.name
+            }));
+        } else {
+            if (response.status === 500) {
+                dispatch(uiActions.setGlobalError(true, json.error.message));
+            }
+        }
+    },
+    fetchDeleteApplication: (id, callback) => async (dispatch) => {
+        const token = await authorizeService.getAccessToken();
+        const response = await fetch(`/api/applications/${id}`, {
+            method: "DELETE",
+            headers: !token ? {} : { "Authorization": `Bearer ${token}` }
+        });
+
+        if (response.status === 401) {
+            authorizeService.signOut();
+            dispatch(push("/account/login"));
+            return;
+        }
+
+        if (response.status === 403) {
+            dispatch(push("/unauthorized"));
+            return;
+        }
+
+        if (response.status === 500) {
+            const json = await response.json();
+            dispatch(uiActions.setGlobalError(true, json.error.message));
+        }
+
+        if (response.ok === true) {
+            dispatch(actions.fetchGetApplications());
+            callback();
         }
     }
 };
@@ -118,6 +199,13 @@ export const reducer = (state = initState, action) => {
                 ...state.list,
                 action.payload
             ]
+        };
+    }
+
+    if (action.type === replaceApplicationDetail) {
+        return {
+            ...state,
+            detail: action.payload
         };
     }
 

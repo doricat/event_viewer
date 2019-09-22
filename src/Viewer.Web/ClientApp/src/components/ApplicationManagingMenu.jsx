@@ -3,7 +3,7 @@ import { ListGroup, Alert } from 'react-bootstrap';
 import { Route, Link } from 'react-router-dom';
 import { loading } from './Loading';
 
-const MenuLink = ({ label, to, activeOnlyWhenExact }) => {
+const MenuLink = ({ label, to, activeOnlyWhenExact, onClick }) => {
     const pathname = typeof to === "object" ? to.pathname : to;
     return (
         <Route
@@ -11,6 +11,7 @@ const MenuLink = ({ label, to, activeOnlyWhenExact }) => {
             exact={activeOnlyWhenExact}
             children={({ match }) => {
                 return <Link to={to}
+                    onClick={onClick}
                     className={match
                         ? "list-group-item list-group-item-action active"
                         : "list-group-item list-group-item-action"}>{label}</Link>;
@@ -19,15 +20,16 @@ const MenuLink = ({ label, to, activeOnlyWhenExact }) => {
     );
 };
 
-export const ApplicationManagingMenu = ({ applications = [] }) => {
+export const ApplicationManagingMenu = ({ applications = [], loadDetail }) => {
     return (
         <ListGroup>
             {applications.map((x) => {
                 return (
-                    <MenuLink to={`/application/${x.id}`}
+                    <MenuLink to={{ pathname: `/application/${x.id}`, state: { manual: true } }}
                         label={x.name}
                         activeOnlyWhenExact={true}
                         key={x.id.toString()}
+                        onClick={() => loadDetail(x.id)}
                     />
                 );
             })}

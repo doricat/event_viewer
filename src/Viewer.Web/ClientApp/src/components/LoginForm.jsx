@@ -90,7 +90,7 @@ class LoginForm extends React.Component {
         const result = validate(model, descriptor);
 
         let invalid = { ...this.state.invalid };
-        if (result.hasError) {
+        if (result.hasError && result.hasOwnProperty(key)) {
             invalid[key] = true;
         } else {
             invalid[key] = false;

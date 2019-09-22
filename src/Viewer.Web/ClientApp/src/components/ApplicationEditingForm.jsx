@@ -91,11 +91,6 @@ class ApplicationEditingForm extends React.Component {
                     let errors = { ...this.state.errors };
                     for (let i = 0; i < details.length; i++) {
                         const detail = details[i];
-                        // {
-                        //  "code": "",
-                        //  "message": "",
-                        //  "target": ""
-                        // }
                         if (detail.target && errors.hasOwnProperty(detail.target)) {
                             errors[detail.target] = detail.message;
                         }

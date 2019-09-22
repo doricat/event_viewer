@@ -25,7 +25,11 @@ namespace Viewer.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options => { options.Filters.Add<ApiModelStateCheckFilterAttribute>(); }).ConfigureApiBehaviorOptions(options =>
+            services.AddMvc(options =>
+            {
+                options.Filters.Add<ApiModelStateCheckFilterAttribute>();
+                options.Filters.Add<ApiExceptionFilterAttribute>();
+            }).ConfigureApiBehaviorOptions(options =>
             {
                 options.SuppressModelStateInvalidFilter = true;
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);

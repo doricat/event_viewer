@@ -28,6 +28,7 @@ function App({ history }) {
                     <Route path="/account/profile" component={Profile} />
                     <Route path="/account/settings" component={Settings} />
                     <Route path="/unauthorized" component={Unauthorized} />
+                    <Route path="/404" component={NotFound} />
                     <Route component={NotFound} />
                 </Switch>
             </Layout>
