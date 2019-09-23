@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Viewer.Web.ApiModels;
+using Viewer.Web.Controllers.Application;
 using Viewer.Web.Data;
-using Viewer.Web.Data.Entities;
 using Viewer.Web.Utilities;
 
 namespace Viewer.Web.Controllers
@@ -96,7 +95,7 @@ namespace Viewer.Web.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Post([FromBody] ApplicationPostModel model)
         {
-            var app = new Application
+            var app = new Data.Entities.Application
             {
                 Id = await IdentityGenerator.GenerateAsync(),
                 Name = model.Name,
@@ -160,45 +159,5 @@ namespace Viewer.Web.Controllers
 
             return NoContent();
         }
-    }
-
-    public class ApplicationPostModel
-    {
-        [Display(Name = "应用程序名称")]
-        [Required(ErrorMessage = "{0}不能为空")]
-        [StringLength(20, ErrorMessage = "{0}的长度必须小于{1}")]
-        public string Name { get; set; }
-
-        [Display(Name = "应用程序Id")]
-        [Required(ErrorMessage = "{0}不能为空")]
-        [StringLength(30, MinimumLength = 6, ErrorMessage = "{0}的长度必须在{2}和{1}之间")]
-        [RegularExpression(@"^[a-zA-Z\d_]+$", ErrorMessage = "{0}只能包含字母数字和下划线")]
-        public string Id { get; set; }
-
-        [Display(Name = "描述")]
-        [StringLength(250, ErrorMessage = "{0}的长度必须小于{1}")]
-        public string Description { get; set; }
-
-        public bool Enabled { get; set; }
-    }
-
-    public class ApplicationGetOutputModel
-    {
-        public long Id { get; set; }
-
-        public string Name { get; set; }
-
-        public string AppId { get; set; }
-
-        public string Description { get; set; }
-
-        public bool Enabled { get; set; }
-    }
-
-    public class ApplicationDetailGetOutputModel : ApplicationGetOutputModel
-    {
-        public int EventCount { get; set; }
-
-        public IList<long> UserList { get; set; }
     }
 }
