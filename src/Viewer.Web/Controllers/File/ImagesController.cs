@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Viewer.Web.Data;
@@ -29,7 +30,8 @@ namespace Viewer.Web.Controllers
                 return NotFound();
             }
 
-            return File(metadata.Filename, metadata.ContentType);
+            var file = System.IO.File.Open(metadata.Filename, FileMode.Open);
+            return File(file, metadata.ContentType);
         }
     }
 }

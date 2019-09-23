@@ -5,6 +5,10 @@ namespace Viewer.Web.Data.Entities
 {
     public class User : IdentityUser<long>
     {
+        public string Name { get; set; }
+
+        public string Avatar { get; set; }
+
         public virtual ICollection<UserApplication> Applications { get; set; }
     }
 }

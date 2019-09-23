@@ -68,8 +68,8 @@ export class ApplicationManagingPanel extends React.Component {
                             <ListGroupItem>订阅者：{detail.userList.length}</ListGroupItem>
                         </ListGroup>
                         <Card.Body>
-                            <Link to={`/application/${match.params.id}/edit`} className="btn btn-primary card-link">编辑应用</Link>
-                            <Link to={`/application/${match.params.id}/subscribers`} className="btn btn-primary card-link">成员管理</Link>
+                            <Link to={{ pathname: `/application/${match.params.id}/edit`, state: { fromPanel: true } }} className="btn btn-primary card-link">编辑应用</Link>
+                            <Link to={{ pathname: `/application/${match.params.id}/subscribers`, state: { fromPanel: true } }} className="btn btn-primary card-link" onClick={() => this.props.loadUsers()}>成员管理</Link>
                             <Button variant="warning" className="card-link" onClick={() => this.handleShow()}>删除应用</Button>
                         </Card.Body>
                     </Card>
@@ -88,10 +88,10 @@ export class ApplicationManagingPanel extends React.Component {
             );
         }
 
-        return loadingAlert();
+        return LoadingAlert();
     }
 }
 
-const loadingAlert = () => (<Alert variant="info"><i>加载中...</i></Alert>);
+const LoadingAlert = () => (<Alert variant="info"><i>加载中...</i></Alert>);
 
-export default loading(ApplicationManagingPanel, loadingAlert);
+export default loading(ApplicationManagingPanel, LoadingAlert);

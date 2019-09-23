@@ -27,7 +27,7 @@ export const ApplicationManagingMenu = ({ applications = [], loadDetail }) => {
                 return (
                     <MenuLink to={{ pathname: `/application/${x.id}`, state: { manual: true } }}
                         label={x.name}
-                        activeOnlyWhenExact={true}
+                        activeOnlyWhenExact={false}
                         key={x.id.toString()}
                         onClick={() => loadDetail(x.id)}
                     />

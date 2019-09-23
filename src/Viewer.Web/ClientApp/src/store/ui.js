@@ -4,6 +4,7 @@ const setApplicationListLoadingState = "ui_set_application_list_loading_state";
 const setGlobalError = "ui_set_global_error";
 const closeGlobalErrorMessageBox = "ui_close_global_error_message_box";
 const setApplicationDetailLoadingState = "ui_set_application_detail_loading_state";
+const setUserListLoadingState = "ui_set_user_list_loading_state";
 
 const initState = {
     navMenuFixed: false,
@@ -12,7 +13,8 @@ const initState = {
         show: false,
         message: null
     },
-    applicationDetailLoadingState: false
+    applicationDetailLoadingState: false,
+    userListLoadingState: false
 };
 
 export const actions = {
@@ -21,7 +23,8 @@ export const actions = {
     setApplicationListLoadingState: (state) => ({ type: setApplicationListLoadingState, payload: state }),
     setGlobalError: (show, message) => ({ type: setGlobalError, payload: { show, message } }),
     closeGlobalErrorMessageBox: () => ({ type: closeGlobalErrorMessageBox }),
-    setApplicationDetailLoadingState: (state) => ({ type: setApplicationDetailLoadingState, payload: state })
+    setApplicationDetailLoadingState: (state) => ({ type: setApplicationDetailLoadingState, payload: state }),
+    setUserListLoadingState: (state) => ({ type: setUserListLoadingState, payload: state })
 };
 
 export const reducer = (state = initState, action) => {
@@ -47,6 +50,10 @@ export const reducer = (state = initState, action) => {
 
     if (action.type === setApplicationDetailLoadingState) {
         return { ...state, applicationDetailLoadingState: action.payload };
+    }
+
+    if (action.type === setUserListLoadingState) {
+        return { ...state, userListLoadingState: action.payload };
     }
 
     return state;

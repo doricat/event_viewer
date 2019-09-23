@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Viewer.Web.Data.Entities;
+using Viewer.Web.Utilities;
 
 namespace Viewer.Web.Data
 {
@@ -27,7 +30,13 @@ namespace Viewer.Web.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<User>(builder => { builder.Property(x => x.Id).ValueGeneratedNever(); });
+            modelBuilder.Entity<User>(builder =>
+            {
+                builder.Property(x => x.Id).ValueGeneratedNever();
+                builder.Property(x => x.Name).HasMaxLength(50);
+                builder.Property(x => x.Avatar).HasMaxLength(500);
+            });
+
             modelBuilder.Entity<Role>(builder => { builder.Property(x => x.Id).ValueGeneratedNever(); });
 
             modelBuilder.Entity<Application>(builder =>
@@ -99,40 +108,133 @@ namespace Viewer.Web.Data
     public interface IFileStore
     {
         Task<FileMetadata> FindByIdAsync(long id);
+
+        Task<EntityResult> SaveFileMetadataAsync(FileMetadata metadata, CancellationToken cancellationToken);
     }
 
     public class FileStore : IFileStore
     {
-        public FileStore(ApplicationDbContext dbContext)
+        public FileStore(ApplicationDbContext dbContext, EntityErrorDescriber errorDescriber)
         {
             DbContext = dbContext;
+            ErrorDescriber = errorDescriber;
         }
 
         public ApplicationDbContext DbContext { get; }
 
         protected DbSet<FileMetadata> Files => DbContext.Files;
 
+        protected EntityErrorDescriber ErrorDescriber { get; }
+
         public async Task<FileMetadata> FindByIdAsync(long id)
         {
             return await Files.FindAsync(id);
+        }
+
+        public async Task<EntityResult> SaveFileMetadataAsync(FileMetadata metadata, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (metadata == null) throw new ArgumentNullException(nameof(metadata));
+
+            DbContext.Add(metadata);
+
+            try
+            {
+                await DbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return EntityResult.Failed(ErrorDescriber.ConcurrencyFailure());
+            }
+
+            return EntityResult.Success;
         }
     }
 
     public class FileManager
     {
-        public FileManager(ILogger<FileManager> logger, IFileStore fileStore)
+        public FileManager(ILogger<FileManager> logger, IFileStore fileStore, IdentityGenerator identityGenerator, IHttpContextAccessor httpContextAccessor, LocalFileStorageService fileStorageService)
         {
             Logger = logger;
             FileStore = fileStore;
+            IdentityGenerator = identityGenerator;
+            HttpContextAccessor = httpContextAccessor;
+            FileStorageService = fileStorageService;
         }
 
         public ILogger<FileManager> Logger { get; }
 
         public IFileStore FileStore { get; }
 
+        public IdentityGenerator IdentityGenerator { get; }
+
+        public IHttpContextAccessor HttpContextAccessor { get; }
+
+        public LocalFileStorageService FileStorageService { get; }
+
         public async Task<FileMetadata> FindByIdAsync(long id)
         {
             return await FileStore.FindByIdAsync(id);
+        }
+
+        public async Task<long> CreateFileAsync(Stream stream, string contentType, string inputName)
+        {
+            var fileName = await FileStorageService.SaveAsync(stream);
+            var metadata = new FileMetadata
+            {
+                Id = await IdentityGenerator.GenerateAsync(),
+                ContentType = contentType.ToLower(),
+                Size = (int) stream.Length,
+                Filename = fileName,
+                RawName = inputName
+            };
+
+            await FileStore.SaveFileMetadataAsync(metadata, HttpContextAccessor.HttpContext.RequestAborted);
+            return metadata.Id;
+        }
+    }
+
+    public class LocalFileStorageServiceOptions
+    {
+        public string RootDirectory { get; set; }
+    }
+
+    public class LocalFileStorageService
+    {
+        public LocalFileStorageService(IOptionsMonitor<LocalFileStorageServiceOptions> options)
+        {
+            Options = options.CurrentValue;
+        }
+
+        public LocalFileStorageServiceOptions Options { get; }
+
+        public async Task<string> SaveAsync(Stream stream)
+        {
+            var directory = await SelectDirectoryAsync();
+            var fileName = Path.Combine(directory, Path.GetRandomFileName()).Replace("\\", "/");
+            using (var file = File.Create(fileName))
+            {
+                stream.Seek(0, SeekOrigin.Begin);
+                await stream.CopyToAsync(file);
+            }
+
+            return fileName;
+        }
+
+        private Task<string> SelectDirectoryAsync()
+        {
+            var path = Options.RootDirectory;
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new InvalidOperationException();
+            }
+
+            var dir = path.StartsWith(".") ? Path.GetFullPath(path) : path;
+
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            return Task.FromResult(dir);
         }
     }
 

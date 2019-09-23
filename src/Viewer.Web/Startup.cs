@@ -29,10 +29,7 @@ namespace Viewer.Web
             {
                 options.Filters.Add<ApiModelStateCheckFilterAttribute>();
                 options.Filters.Add<ApiExceptionFilterAttribute>();
-            }).ConfigureApiBehaviorOptions(options =>
-            {
-                options.SuppressModelStateInvalidFilter = true;
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            }).ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
 
@@ -73,7 +70,13 @@ namespace Viewer.Web
             services.Configure<IdentityGeneratorOptions>(x => x.MachineTag = 1);
             services.AddSingleton<IdentityGenerator>();
             services.AddScoped<ApplicationManager>();
+            services.AddScoped<EntityErrorDescriber>();
             services.AddScoped<IApplicationStore, ApplicationStore>();
+
+            services.Configure<LocalFileStorageServiceOptions>(x => x.RootDirectory = "./upload");
+            services.AddScoped<IFileStore, FileStore>();
+            services.AddScoped<LocalFileStorageService>();
+            services.AddScoped<FileManager>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

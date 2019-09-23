@@ -54,6 +54,8 @@ class ApplicationEditingForm extends React.Component {
                 description: null,
             }
         };
+
+        // TODO 直接通过地址访问未加载数据
     }
 
     handleChange(key, value) {
