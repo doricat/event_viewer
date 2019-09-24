@@ -65,9 +65,14 @@ namespace Viewer.Web.Data
             return await Store.UpdateAsync(app, CancellationToken);
         }
 
-        public Task<EntityResult> SetSubscribersAsync(Application app, IList<long> userList)
+        public async Task<EntityResult> SetSubscribersAsync(Application app, IList<long> userList)
         {
-            throw new NotImplementedException();
+            return await GetSubscriberStore().SetSubscribersAsync(app, userList, CancellationToken);
+        }
+
+        public async Task<EventStatisticsResult> GetEventStatisticsAsync(Application app, string level)
+        {
+            return await GetEventStore().CountEventAsync(app, level, CancellationToken);
         }
 
         private IApplicationDetailStore GetDetailStore()
@@ -78,6 +83,26 @@ namespace Viewer.Web.Data
             }
 
             return detailStore;
+        }
+
+        private IApplicationSubscriberStore GetSubscriberStore()
+        {
+            if (!(Store is IApplicationSubscriberStore subscriberStore))
+            {
+                throw new NotSupportedException();
+            }
+
+            return subscriberStore;
+        }
+
+        private IApplicationEventStore GetEventStore()
+        {
+            if (!(Store is IApplicationEventStore eventStore))
+            {
+                throw new NotSupportedException();
+            }
+
+            return eventStore;
         }
     }
 }

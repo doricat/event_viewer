@@ -7,7 +7,7 @@
             return new EntityError
             {
                 Code = nameof(DefaultError),
-                Description = ""
+                Description = "An unknown failure has occurred."
             };
         }
 
@@ -16,7 +16,7 @@
             return new EntityError
             {
                 Code = nameof(ConcurrencyFailure),
-                Description = ""
+                Description = "Optimistic concurrency failure, object has been modified."
             };
         }
     }

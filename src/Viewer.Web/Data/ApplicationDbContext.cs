@@ -16,6 +16,8 @@ namespace Viewer.Web.Data
 
         public DbSet<FileMetadata> Files { get; set; }
 
+        public DbQuery<EventStatisticsResult> EventStatistics { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

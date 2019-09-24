@@ -85,10 +85,19 @@ namespace Viewer.Web.Controllers
             throw new NotImplementedException();
         }
 
-        [HttpGet("{id}/events/summaries/{level}")]
-        public IActionResult Get(string id, [FromRoute] string level)
+        [HttpGet("{id}/events/statistics/{level:regex(^(critical|error|warning|info|debug|trace)$)}")]
+        public async Task<IActionResult> Get(string id, [FromRoute] string level)
         {
-            throw new NotImplementedException();
+            var app = await ApplicationManager.FindByIdAsync(id);
+            if (app == null)
+            {
+                var msg = $"找不到指定的应用程序 {id}";
+                Logger.LogWarning(msg);
+                return NotFound(new ApiErrorResult<ApiError>(new ApiError("ObjectNotFound", msg)));
+            }
+
+            var result = await ApplicationManager.GetEventStatisticsAsync(app, level);
+            return Ok(new ApiResult<EventStatisticsResult>(result));
         }
 
         [HttpPost]
@@ -139,6 +148,26 @@ namespace Viewer.Web.Controllers
 
             Logger.LogWarning($"找不到指定的应用程序 {id}");
             return NoContent();
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> Patch(string id, [FromBody] ApplicationPatchSubscribersModel model)
+        {
+            var app = await ApplicationManager.FindByIdAsync(id);
+            if (app == null)
+            {
+                var msg = $"找不到指定的应用程序 {id}";
+                Logger.LogWarning(msg);
+                return NotFound(new ApiErrorResult<ApiError>(new ApiError("ObjectNotFound", msg)));
+            }
+
+            var result = await ApplicationManager.SetSubscribersAsync(app, model.UserList);
+            if (result.Succeeded)
+            {
+                return NoContent();
+            }
+
+            throw new NotImplementedException();
         }
 
         [HttpDelete("{id}")]

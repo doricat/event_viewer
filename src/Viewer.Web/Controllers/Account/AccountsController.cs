@@ -103,5 +103,16 @@ namespace Viewer.Web.Controllers
                 return NoContent();
             }
         }
+
+        [Authorize]
+        [HttpPatch("current/profiles/name")]
+        public async Task<IActionResult> Patch([FromBody] UserNameInputModel model)
+        {
+            var user = await UserManager.FindByEmailAsync(User.Identity.Name);
+            user.Name = model.Name = model.Name;
+            await UserManager.UpdateAsync(user);
+
+            return NoContent();
+        }
     }
 }

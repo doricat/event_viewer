@@ -9,5 +9,7 @@ namespace Viewer.Web.Data
         Task<EntityResult> AddEventAsync(Application app, Event evt, CancellationToken cancellationToken);
 
         Task<EntityResult> AddEventAsync(long appId, Event evt, CancellationToken cancellationToken);
+
+        Task<EventStatisticsResult> CountEventAsync(Application app, string level, CancellationToken cancellationToken);
     }
 }

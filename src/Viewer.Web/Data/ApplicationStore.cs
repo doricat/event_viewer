@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,11 +10,16 @@ using Viewer.Web.Data.Entities;
 
 namespace Viewer.Web.Data
 {
-    public class ApplicationStore : IApplicationStore, IQueryableApplicationStore, IApplicationEventStore, IApplicationDetailStore, IApplicationEventSummaryStore
+    public class ApplicationStore : IApplicationStore,
+        IQueryableApplicationStore,
+        IApplicationEventStore,
+        IApplicationDetailStore,
+        IApplicationSubscriberStore
     {
-        public ApplicationStore(ApplicationDbContext eventDbContext)
+        public ApplicationStore(ApplicationDbContext eventDbContext, EntityErrorDescriber errorDescriber)
         {
             Context = eventDbContext;
+            ErrorDescriber = errorDescriber;
         }
 
         public ApplicationDbContext Context { get; }
@@ -21,7 +28,7 @@ namespace Viewer.Web.Data
 
         protected DbSet<Event> Events => Context.Events;
 
-        protected EntityErrorDescriber ErrorDescriber { get; set; }
+        protected EntityErrorDescriber ErrorDescriber { get; }
 
         public async Task<Application> FindByNameAsync(string name)
         {
@@ -96,9 +103,34 @@ namespace Viewer.Web.Data
             return EntityResult.Success;
         }
 
-        public Task<IDictionary<string, int>> QueryEventSummaryAsync(long appId)
+        public async Task<EntityResult> SetSubscribersAsync(Application app, IList<long> userList, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var appUsers = await Context.Set<UserApplication>().Where(x => x.ApplicationId == app.Id).ToListAsync(cancellationToken);
+            var appUserList = appUsers.Select(x => x.UserId).ToList();
+            var list1 = userList.Except(appUserList).ToList();
+            var list2 = appUserList.Except(userList).ToList();
+
+            foreach (var i in list1)
+            {
+                Context.Add(new UserApplication {UserId = i, ApplicationId = app.Id});
+            }
+
+            foreach (var i in list2)
+            {
+                var item = appUsers.First(x => x.UserId == i);
+                Context.Remove(item);
+            }
+
+            try
+            {
+                await Context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return EntityResult.Failed(ErrorDescriber.ConcurrencyFailure());
+            }
+
+            return EntityResult.Success;
         }
 
         public Task<Tuple<Application, int>> FindDetailByIdAsync(string id)
@@ -159,6 +191,44 @@ namespace Viewer.Web.Data
             }
 
             return EntityResult.Success;
+        }
+
+        public async Task<EventStatisticsResult> CountEventAsync(Application app, string level, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (app == null) throw new ArgumentNullException(nameof(app));
+            if (level == null) throw new ArgumentNullException(nameof(level));
+
+            var result = await Context.EventStatistics.FromSql(@"
+declare
+    @last_1_hour   int,
+    @last_24_hours int,
+    @last_7_days   int,
+    @now           datetime = getdate();
+
+select @last_1_hour = count(*)
+from Events
+where ApplicationId = @app_id
+  and Level = @level
+  and TimeStamp between dateadd(hh, -1, @now) and @now;
+
+select @last_24_hours = count(*)
+from Events
+where ApplicationId = @app_id
+  and Level = @level
+  and TimeStamp between dateadd(hh, -24, @now) and @now;
+
+select @last_7_days = count(*)
+from Events
+where ApplicationId = @app_id
+  and Level = @level
+  and TimeStamp between dateadd(dd, -7, @now) and @now;
+
+select @level as level, @last_1_hour as last1hour, @last_24_hours as last24hours, @last_7_days as last7days",
+                new SqlParameter("@app_id", SqlDbType.BigInt) {Value = app.Id},
+                new SqlParameter("@level", SqlDbType.NVarChar, 50) {Value = level}).FirstOrDefaultAsync(cancellationToken);
+
+            return result;
         }
 
         public IQueryable<Application> Apps => Applications;
