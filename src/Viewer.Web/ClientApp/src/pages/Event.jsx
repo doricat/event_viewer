@@ -1,12 +1,16 @@
-import React from 'react'
-import { Alert } from 'react-bootstrap'
+import React from 'react';
+import { Route, Switch } from 'react-router-dom';
+import EventDetail from './EventDetail';
+import EventSummary from './EventSummary';
 
 class Event extends React.Component {
     render() {
         return (
-            <Alert variant="info">
-                建设中
-        </Alert>
+            <Switch>
+                <Route path="/event/summary" component={EventSummary} />
+                <Route path="/event/detail" component={EventDetail} />
+                <Route path="/event" component={EventSummary} />
+            </Switch>
         );
     }
 }

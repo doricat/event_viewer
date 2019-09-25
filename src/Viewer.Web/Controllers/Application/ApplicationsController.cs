@@ -85,7 +85,7 @@ namespace Viewer.Web.Controllers
             throw new NotImplementedException();
         }
 
-        [HttpGet("{id}/events/statistics/{level:regex(^(critical|error|warning|info|debug|trace)$)}")]
+        [HttpGet("{id}/events/statistics/{level:regex(^(critical|error|warning|information|debug|trace)$)}")]
         public async Task<IActionResult> Get(string id, [FromRoute] string level)
         {
             var app = await ApplicationManager.FindByIdAsync(id);
@@ -93,7 +93,7 @@ namespace Viewer.Web.Controllers
             {
                 var msg = $"找不到指定的应用程序 {id}";
                 Logger.LogWarning(msg);
-                return NotFound(new ApiErrorResult<ApiError>(new ApiError("ObjectNotFound", msg)));
+                return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, msg)));
             }
 
             var result = await ApplicationManager.GetEventStatisticsAsync(app, level);
@@ -158,7 +158,7 @@ namespace Viewer.Web.Controllers
             {
                 var msg = $"找不到指定的应用程序 {id}";
                 Logger.LogWarning(msg);
-                return NotFound(new ApiErrorResult<ApiError>(new ApiError("ObjectNotFound", msg)));
+                return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, msg)));
             }
 
             var result = await ApplicationManager.SetSubscribersAsync(app, model.UserList);

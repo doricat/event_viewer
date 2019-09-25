@@ -4,7 +4,9 @@ import hoistNonReactStatics from 'hoist-non-react-statics';
 export const loading = (WrappedComponent, LoadingComponent) => {
     class NewComponent extends React.Component {
         UNSAFE_componentWillMount() {
-            
+            if (this.props.load) {
+                this.props.load();
+            }
         }
 
         render() {

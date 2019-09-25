@@ -5,7 +5,8 @@ import { ConnectedRouter } from 'connected-react-router';
 import Layout from './components/Layout'
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import Event from './pages/Event';
+import EventSummary from './pages/EventSummary';
+import EventDetail from './pages/EventDetail';
 import Monitor from './pages/Monitor';
 import Application from './pages/Application';
 import Login from './pages/Login';
@@ -20,7 +21,9 @@ function App({ history }) {
             <Layout>
                 <Switch>
                     <Route exact path="/" component={Home} />
-                    <Route path="/event" component={Event} />
+                    <Route path="/event/summary" component={EventSummary} />
+                    <Route path="/event/detail" component={EventDetail} />
+                    <Route path="/event" component={EventSummary} />
                     <Route path="/monitor" component={Monitor} />
                     <Route path="/application" component={Application} />
                     <Route path="/account/login" component={Login} />

@@ -9,10 +9,10 @@ const MenuLink = ({ label, to, activeOnlyWhenExact, onClick }) => {
         <Route
             path={pathname}
             exact={activeOnlyWhenExact}
-            children={({ match }) => {
+            children={({ location }) => {
                 return <Link to={to}
                     onClick={onClick}
-                    className={match
+                    className={new URLSearchParams(location.search).get("application") === new URLSearchParams(to.search).get("application")
                         ? "list-group-item list-group-item-action active"
                         : "list-group-item list-group-item-action"}>{label}</Link>;
             }}
@@ -20,16 +20,16 @@ const MenuLink = ({ label, to, activeOnlyWhenExact, onClick }) => {
     );
 };
 
-export const ApplicationManagingMenu = ({ applications = [], loadDetail }) => {
+export const EventNavMenu = ({ applications = [], onClick, pathname }) => {
     return (
         <ListGroup>
             {applications.map((x) => {
                 return (
-                    <MenuLink to={{ pathname: `/application/${x.id}`, state: { } }}
+                    <MenuLink to={{ pathname: pathname, search: `?application=${x.id}`, state: {} }}
                         label={x.name}
                         activeOnlyWhenExact={false}
                         key={x.id.toString()}
-                        onClick={() => loadDetail(x.id)}
+                        onClick={() => onClick(x.id)}
                     />
                 );
             })}
@@ -37,6 +37,6 @@ export const ApplicationManagingMenu = ({ applications = [], loadDetail }) => {
     );
 };
 
-export default loading(ApplicationManagingMenu, () => {
+export default loading(EventNavMenu, () => {
     return <Alert variant="info"><i>加载中...</i></Alert>;
 });
