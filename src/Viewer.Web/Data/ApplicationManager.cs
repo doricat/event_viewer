@@ -105,4 +105,32 @@ namespace Viewer.Web.Data
             return eventStore;
         }
     }
+
+    public class EventManager
+    {
+        public EventManager(IEventStore store, IHttpContextAccessor httpContextAccessor)
+        {
+            Store = store;
+            HttpContextAccessor = httpContextAccessor;
+        }
+
+        public IEventStore Store { get; }
+
+        public IHttpContextAccessor HttpContextAccessor { get; }
+
+        protected CancellationToken CancellationToken => HttpContextAccessor.HttpContext.RequestAborted;
+
+        public IQueryable<Event> Events
+        {
+            get
+            {
+                if (!(Store is IQueryableEventStore queryableStore))
+                {
+                    throw new NotSupportedException();
+                }
+
+                return queryableStore.Apps;
+            }
+        }
+    }
 }

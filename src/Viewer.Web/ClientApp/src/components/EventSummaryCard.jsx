@@ -31,7 +31,8 @@ const EventSummaryCard = ({ level, appId, statisticsResult = defaultStatisticsRe
                         search: search,
                         state: {
                             startTime: statisticsResult.oneHourAgo,
-                            endTime: statisticsResult.endTime
+                            endTime: statisticsResult.endTime,
+                            fromSummary: true
                         }
                     }}>近1小时：{statisticsResult.last1Hour}</Link>
                 <Link className="list-group-item list-group-item-action" role="tab" tabIndex="-1"
@@ -40,7 +41,8 @@ const EventSummaryCard = ({ level, appId, statisticsResult = defaultStatisticsRe
                         search: search,
                         state: {
                             startTime: statisticsResult.oneDayAgo,
-                            endTime: statisticsResult.endTime
+                            endTime: statisticsResult.endTime,
+                            fromSummary: true
                         }
                     }}>24小时：{statisticsResult.last24Hours}</Link>
                 <Link className="list-group-item list-group-item-action" role="tab" tabIndex="-1"
@@ -49,7 +51,8 @@ const EventSummaryCard = ({ level, appId, statisticsResult = defaultStatisticsRe
                         search: search,
                         state: {
                             startTime: statisticsResult.sevenDaysAgo,
-                            endTime: statisticsResult.endTime
+                            endTime: statisticsResult.endTime,
+                            fromSummary: true
                         }
                     }}>7天：{statisticsResult.last7Days}</Link>
             </ListGroup>

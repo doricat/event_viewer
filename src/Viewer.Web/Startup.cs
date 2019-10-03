@@ -77,6 +77,9 @@ namespace Viewer.Web
             services.AddScoped<IFileStore, FileStore>();
             services.AddScoped<LocalFileStorageService>();
             services.AddScoped<FileManager>();
+
+            services.AddScoped<IEventStore, EventStore>();
+            services.AddScoped<EventManager>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

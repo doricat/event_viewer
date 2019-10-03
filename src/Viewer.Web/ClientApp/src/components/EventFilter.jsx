@@ -31,6 +31,16 @@ class EventFilter extends React.Component {
 
     search() {
         this.setState({ isSubmitting: true });
+        const { level, startTime, endTime } = this.state;
+        this.props.onQuery(level, startTime, endTime, () => {
+            this.setState({ isSubmitting: false });
+        });
+    }
+
+    UNSAFE_componentWillMount() {
+        if (this.props.fromSummary === true) {
+            this.search();
+        }
     }
 
     render() {

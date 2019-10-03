@@ -20,9 +20,10 @@ class EventDetail extends React.Component {
         const params = new URLSearchParams(this.props.location.search);
         const appId = params.get("application");
         const level = params.get("level") || "All";
+        const state = this.props.location.state;
 
         const content = appId && level
-            ? <EventDetailPanel appId={appId} level={level} />
+            ? <EventDetailPanel appId={appId} level={level} {...state} />
             : <EventHelper />;
 
         return (

@@ -1,72 +1,61 @@
 import React from 'react';
 import { Alert, Button } from 'react-bootstrap';
+import { getStyle } from './eventLevelStyle';
 
-export default () => (
-    <div>
-        <Alert variant="primary">
-            <Alert.Heading>Critical</Alert.Heading>
-            <p>这里是日志消息</p>
-            <hr />
-            <p className="mb-0">这里是日志的附加信息</p>
-            <hr />
-            <div className="d-flex justify-content-end">
-                <Button variant="outline-info">在新窗口查看</Button>
-            </div>
-        </Alert>
+class EventList extends React.Component {
+    constructor(props) {
+        super(props);
 
-        <Alert variant="danger">
-            <Alert.Heading>Error</Alert.Heading>
-            <p>这里是日志消息</p>
-            <hr />
-            <p className="mb-0">这里是日志的附加信息</p>
-            <hr />
-            <div className="d-flex justify-content-end">
-                <Button variant="outline-info">在新窗口查看</Button>
-            </div>
-        </Alert>
+        this.Bottom = React.createRef();
+        this.Box = React.createRef();
 
-        <Alert variant="warning">
-            <Alert.Heading>Warning</Alert.Heading>
-            <p>这里是日志消息</p>
-            <hr />
-            <p className="mb-0">这里是日志的附加信息</p>
-            <div className="d-flex justify-content-end">
-                <Button variant="outline-info">在新窗口查看</Button>
-            </div>
-        </Alert>
+        this.eventScroll = this.eventScroll.bind(this);
+    }
 
-        <Alert variant="info">
-            <Alert.Heading>Info</Alert.Heading>
-            <p>这里是日志消息</p>
-            <hr />
-            <p className="mb-0">这里是日志的附加信息</p>
-            <div className="d-flex justify-content-end">
-                <Button variant="outline-info">在新窗口查看</Button>
-            </div>
-        </Alert>
+    componentDidMount() {
+        window.addEventListener("scroll", this.eventScroll);
+    }
 
-        <Alert variant="secondary">
-            <Alert.Heading>Debug</Alert.Heading>
-            <p>这里是日志消息</p>
-            <hr />
-            <p className="mb-0">这里是日志的附加信息</p>
-            <div className="d-flex justify-content-end">
-                <Button variant="outline-info">在新窗口查看</Button>
-            </div>
-        </Alert>
+    componentWillUnmount() {
+        window.removeEventListener("scroll", this.eventScroll);
+    }
 
-        <Alert variant="dark">
-            <Alert.Heading>Trace</Alert.Heading>
-            <p>这里是日志消息</p>
-            <hr />
-            <p className="mb-0">这里是日志的附加信息</p>
-            <div className="d-flex justify-content-end">
-                <Button variant="outline-info">在新窗口查看</Button>
-            </div>
-        </Alert>
+    eventScroll() {
+        const boxHeight = this.Box.current.offsetParent.clientHeight + 54 /*filter height*/ + 73 /*nav height*/ + 16 /*nav margin bottom*/;
+        const yOffset = window.pageYOffset + window.innerHeight;
 
-        <Alert variant="success">
-            没有更多数据
-        </Alert>
-    </div>
-);
+        if (yOffset >= boxHeight) {
+            this.props.loadMore();
+        }
+    }
+
+    render() {
+        const items = this.props.list.map((x) => {
+            const style = getStyle(x.level);
+
+            return (
+                <Alert variant={style} key={x.id.toString()}>
+                    <Alert.Heading>{x.level}</Alert.Heading>
+                    <p>{x.message}</p>
+                    <hr />
+                    <p className="mb-0">{x.category} - {x.timestamp.toLocaleString()}</p>
+                    <div className="d-flex justify-content-end">
+                        <Button variant="outline-info">在新窗口查看</Button>
+                    </div>
+                </Alert>
+            );
+        });
+
+        if (items.length === 0) {
+            items.push(
+                <Alert variant="success" key="-1">
+                    暂无数据
+                </Alert>
+            );
+        }
+
+        return <div ref={this.Box}>{items}<div ref={this.Bottom}></div></div>;
+    }
+}
+
+export default EventList;

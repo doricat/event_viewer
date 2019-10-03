@@ -25,7 +25,7 @@ export const EventNavMenu = ({ applications = [], onClick, pathname }) => {
         <ListGroup>
             {applications.map((x) => {
                 return (
-                    <MenuLink to={{ pathname: pathname, search: `?application=${x.id}`, state: {} }}
+                    <MenuLink to={{ pathname: pathname, search: `?application=${x.id}` }}
                         label={x.name}
                         activeOnlyWhenExact={false}
                         key={x.id.toString()}

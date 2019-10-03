@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Viewer.Web.ApiFilter;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Application;
 using Viewer.Web.Data;
+using Viewer.Web.Data.Entities;
 using Viewer.Web.Utilities;
 
 namespace Viewer.Web.Controllers
@@ -20,11 +23,13 @@ namespace Viewer.Web.Controllers
     {
         public ApplicationsController(ILogger<ApplicationsController> logger,
             ApplicationManager applicationManager,
-            IdentityGenerator identityGenerator)
+            IdentityGenerator identityGenerator,
+            EventManager eventManager)
         {
             Logger = logger;
             ApplicationManager = applicationManager;
             IdentityGenerator = identityGenerator;
+            EventManager = eventManager;
         }
 
         public ILogger<ApplicationsController> Logger { get; }
@@ -32,6 +37,8 @@ namespace Viewer.Web.Controllers
         public ApplicationManager ApplicationManager { get; }
 
         public IdentityGenerator IdentityGenerator { get; }
+
+        public EventManager EventManager { get; }
 
         [HttpGet]
         public Task<IActionResult> Get()
@@ -80,9 +87,48 @@ namespace Viewer.Web.Controllers
         }
 
         [HttpGet("{id}/events")]
-        public IActionResult Get(string id, [FromQuery(Name = "$filter")] object filter, [FromQuery(Name = "$top")] int top, [FromQuery(Name = "$skip")] int skip)
+        public Task<IActionResult> Get(long id, // 简化只支持id
+            [FromQuery(Name = "$filter")] FilterModel<EventFilterModel> filter,
+            [FromQuery(Name = "$top")] int top = 20,
+            [FromQuery(Name = "$skip")] int skip = 0)
         {
-            throw new NotImplementedException();
+            var parameter = Expression.Parameter(typeof(Event), "x");
+            var appIdPropExpr = Expression.Property(parameter, "ApplicationId");
+            var appIdValueExpr = Expression.Constant(id);
+            var expr2 = Expression.Equal(appIdPropExpr, appIdValueExpr);
+            Expression<Func<Event, bool>> lambda;
+
+            if (filter?.Node != null)
+            {
+                var expr = filter.Node.ToExpression(parameter);
+                lambda = Expression.Lambda<Func<Event, bool>>(Expression.AndAlso(expr2, expr), parameter);
+            }
+            else
+            {
+                lambda = Expression.Lambda<Func<Event, bool>>(expr2, parameter);
+            }
+
+            var listTask = EventManager.Events.OrderByDescending(x => x.TimeStamp).Where(lambda).Skip(skip).Take(top).ToListAsync(HttpContext.RequestAborted);
+            var countTask = EventManager.Events.CountAsync(lambda, HttpContext.RequestAborted);
+
+            Task.WaitAll(listTask, countTask);
+
+            return Task.FromResult<IActionResult>(
+                Ok(new PagedResult<IList<EventListGetModel>>(
+                    listTask.Result.Select(x => new EventListGetModel
+                    {
+                        Id = x.Id,
+                        ApplicationId = x.ApplicationId,
+                        Category = x.Category,
+                        Level = x.Level,
+                        Message = x.Message,
+                        ProcessId = x.ProcessId,
+                        TimeStamp = x.TimeStamp
+                    }).ToList())
+                {
+                    Count = countTask.Result,
+                    Sorts = new[] {"timestamp desc"}
+                }));
         }
 
         [HttpGet("{id}/events/statistics/{level:regex(^(critical|error|warning|information|debug|trace)$)}")]
