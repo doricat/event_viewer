@@ -51,6 +51,8 @@ namespace Viewer.Web.ApiFilter
                 {
                     result.Add(new ValidationResult(e.Message, new[] {"$filter"}));
                 }
+
+                Validate(Node, result);
             }
             else
             {
@@ -58,6 +60,47 @@ namespace Viewer.Web.ApiFilter
             }
 
             return result;
+        }
+
+        protected void Validate(Node root, IList<ValidationResult> result)
+        {
+            switch (root.Type)
+            {
+                case NodeType.UnaryLogicalExpression:
+                {
+                    var expressionNode = (UnaryExpressionNode) root;
+                    Validate(expressionNode.Params[0], result);
+                    break;
+                }
+                case NodeType.BinaryLogicalExpression:
+                {
+                    var expressionNode = (BinaryExpressionNode) root;
+                    Validate(expressionNode.Params[0], result);
+                    Validate(expressionNode.Params[1], result);
+                    break;
+                }
+                case NodeType.RelationalExpression:
+                {
+                    var expressionNode = (BinaryExpressionNode) root;
+                    Validate(expressionNode.Params[0], result);
+                    break;
+                }
+                case NodeType.Property:
+                {
+                    var propertyNode = (PropertyNode) root;
+                    var item = Validate(propertyNode);
+                    if (item != null)
+                    {
+                        result.Add(item);
+                    }
+
+                    break;
+                }
+                case NodeType.Constant:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(root));
+            }
         }
 
         protected ValidationResult Validate(PropertyNode node)
