@@ -59,10 +59,10 @@ namespace Viewer.Web.Data
                 builder.Property(x => x.Id).IsRequired().ValueGeneratedNever();
                 builder.Property(x => x.GlobalId).IsRequired();
                 builder.Property(x => x.ApplicationId).IsRequired();
-                builder.Property(x => x.Category).HasMaxLength(250).IsRequired();
+                builder.Property(x => x.Category).HasMaxLength(500).IsRequired();
                 builder.Property(x => x.Level).HasMaxLength(50).IsRequired();
                 builder.Property(x => x.EventId).IsRequired();
-                builder.Property(x => x.EventType).HasMaxLength(50);
+                builder.Property(x => x.EventType).HasMaxLength(500);
                 builder.Property(x => x.Message).HasColumnType("nvarchar(max)").IsRequired();
                 builder.Property(x => x.ProcessId).IsRequired();
                 builder.Property(x => x.Exception).HasColumnType("nvarchar(max)");

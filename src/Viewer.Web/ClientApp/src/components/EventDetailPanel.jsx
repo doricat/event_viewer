@@ -39,24 +39,22 @@ class EventDetailPanel extends React.Component {
         };
 
         this.filter = undefined;
-        this.loading = false;
         this.queryDetail.bind(this);
     }
 
     async queryDetail(level, startTime, endTime, callback) {
+        this.setState({
+            apiError: null,
+            apiResult: null,
+            list: []
+        });
         this.filter = { level, startTime, endTime, skip: 0 };
-        this.query();
-        callback();
+        this.query().then(() => callback());
     }
 
     async loadMore() {
-        if (this.loading === true) {
-            return;
-        }
         this.filter.skip = this.filter.skip + $top;
-        console.log(this.filter);
-        // await this.query();
-        this.loading = true;
+        await this.query();
     }
 
     async query() {
@@ -74,7 +72,7 @@ class EventDetailPanel extends React.Component {
                 let state = {
                     apiError: null,
                     apiResult: json,
-                    list: [...this.state.list, ...json.value]
+                    list: json.value
                 };
                 this.setState(state);
                 return;
@@ -106,6 +104,7 @@ class EventDetailPanel extends React.Component {
 
     render() {
         const { appId, level, startTime, endTime, fromSummary } = this.props;
+        const dataCount = this.state.apiResult ? this.state.apiResult.count : undefined;
         return (
             <>
                 <Row>
@@ -120,7 +119,7 @@ class EventDetailPanel extends React.Component {
                 </Row>
                 <Row>
                     <Col md={12}>
-                        <EventList key={appId.toString()} list={this.state.list} loadMore={() => this.loadMore()} />
+                        <EventList key={appId.toString()} list={this.state.list} dataCount={dataCount} loadMore={() => this.loadMore()} />
                     </Col>
                 </Row>
             </>

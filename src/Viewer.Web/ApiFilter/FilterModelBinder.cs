@@ -19,10 +19,10 @@ namespace Viewer.Web.ApiFilter
 
             bindingContext.ModelState.SetModelValue(modelName, valueProviderResult);
             var value = valueProviderResult.FirstValue;
-            if (string.IsNullOrEmpty(value))
-            {
-                return Task.CompletedTask;
-            }
+//            if (string.IsNullOrEmpty(value))
+//            {
+//                return Task.CompletedTask;
+//            }
 
             var type = typeof(FilterModel<>);
             var model = Activator.CreateInstance(type.MakeGenericType(bindingContext.ModelType.GenericTypeArguments), value);

@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Shared\LogMessage.cs" Link="LogMessage.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="IdentityModel" Version="3.10.10" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />

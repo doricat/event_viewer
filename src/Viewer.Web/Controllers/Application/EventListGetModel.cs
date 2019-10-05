@@ -16,6 +16,6 @@ namespace Viewer.Web.Controllers.Application
 
         public int ProcessId { get; set; }
 
-        public DateTime TimeStamp { get; set; }
+        public DateTime Timestamp { get; set; }
     }
 }

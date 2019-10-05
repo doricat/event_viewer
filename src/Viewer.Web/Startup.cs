@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
+using Viewer.Web.Extensions.Logging;
+using Viewer.Web.Services;
 using Viewer.Web.Utilities;
 
 namespace Viewer.Web
@@ -80,6 +82,10 @@ namespace Viewer.Web
 
             services.AddScoped<IEventStore, EventStore>();
             services.AddScoped<EventManager>();
+
+            services.AddMyHostedService();
+
+            services.Configure<EventWriterOptions>(x => x.CurrentApplicationId = 281482820257685);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

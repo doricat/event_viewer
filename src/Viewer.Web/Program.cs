@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using Viewer.Web.Extensions.Logging;
 
 namespace Viewer.Web
 {
@@ -13,6 +15,15 @@ namespace Viewer.Web
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureLogging((context, builder) =>
+                {
+                    if (context.HostingEnvironment.IsDevelopment())
+                    {
+                        builder.AddConsole();
+                    }
+
+                    builder.AddFakeLogger();
+                })
                 .UseStartup(typeof(Startup).GetTypeInfo().Assembly.FullName);
     }
 }

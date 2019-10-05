@@ -92,6 +92,11 @@ namespace Viewer.Web.Controllers
             [FromQuery(Name = "$top")] int top = 20,
             [FromQuery(Name = "$skip")] int skip = 0)
         {
+            if (filter != null && !string.IsNullOrWhiteSpace(filter.FilterExpr))
+            {
+                Logger.LogDebug(filter.FilterExpr);
+            }
+
             var parameter = Expression.Parameter(typeof(Event), "x");
             var appIdPropExpr = Expression.Property(parameter, "ApplicationId");
             var appIdValueExpr = Expression.Constant(id);
@@ -123,7 +128,7 @@ namespace Viewer.Web.Controllers
                         Level = x.Level,
                         Message = x.Message,
                         ProcessId = x.ProcessId,
-                        TimeStamp = x.TimeStamp
+                        Timestamp = x.TimeStamp
                     }).ToList())
                 {
                     Count = countTask.Result,

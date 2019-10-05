@@ -14,7 +14,7 @@ namespace Viewer.Web.ApiFilter
     {
         public FilterModel(string filterExpr)
         {
-            FilterExpr = filterExpr ?? throw new ArgumentNullException(nameof(filterExpr));
+            FilterExpr = filterExpr;
             var type = typeof(T);
             TargetModelPropertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
         }
@@ -36,6 +36,11 @@ namespace Viewer.Web.ApiFilter
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var result = new List<ValidationResult>();
+            if (string.IsNullOrWhiteSpace(FilterExpr))
+            {
+                return result;
+            }
+
             var reader = new FilterReader(FilterReader.Utf8Encoding.GetBytes(FilterExpr));
             if (FilterReaderHelper.TryRead(ref reader, FilterExpr, TargetModelPropertyInfos, out var tokens, out var error))
             {

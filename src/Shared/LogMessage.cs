@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Logging.WebSocket
+namespace Logging
 {
     public struct LogMessage
     {

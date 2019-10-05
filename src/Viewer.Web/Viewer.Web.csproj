@@ -13,6 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Shared\LogMessage.cs" Link="Extensions\Logging\LogMessage.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.0.30" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
   </ItemGroup>

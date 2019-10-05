@@ -56,7 +56,7 @@ namespace Viewer.Web.ApiFilter
                 var node = new BinaryExpressionNode(token.Value, NodeType.BinaryLogicalExpression);
                 node.Params.Add(left);
                 node.Params.Add(right);
-                return node;
+                left = node;
             }
 
             if (!(left is BinaryExpressionNode) && !(left is UnaryExpressionNode))
