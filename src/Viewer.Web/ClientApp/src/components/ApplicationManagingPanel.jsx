@@ -34,7 +34,7 @@ export class ApplicationManagingPanel extends React.Component {
         });
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         const { location, match, loadDetail } = this.props;
         if (location.state === undefined && this.props.loading === false) {
             loadDetail(match.params.id);

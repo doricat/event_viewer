@@ -11,6 +11,7 @@ using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
 using Viewer.Web.Extensions.Logging;
+using Viewer.Web.Hubs;
 using Viewer.Web.Services;
 using Viewer.Web.Utilities;
 
@@ -86,6 +87,8 @@ namespace Viewer.Web
             services.AddMyHostedService();
 
             services.Configure<EventWriterOptions>(x => x.CurrentApplicationId = 281482820257685);
+
+            services.AddSignalR();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -108,6 +111,8 @@ namespace Viewer.Web
             app.UseAuthentication();
 
             app.UseCors("CorsPolicy");
+
+            app.UseSignalR(routes => { routes.MapHub<EventHub>("/EventHub"); });
 
             app.UseMvc(routes =>
             {

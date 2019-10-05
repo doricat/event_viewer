@@ -10,7 +10,7 @@ class ApplicationManagingLayout extends React.Component {
         this.props.dispatch(applicationActions.fetchLoadApplicationDetail(id, true));
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.props.dispatch(applicationActions.fetchGetApplications());
     }
 

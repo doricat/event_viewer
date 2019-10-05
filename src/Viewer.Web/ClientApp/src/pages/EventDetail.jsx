@@ -8,11 +8,7 @@ import EventDetailPanel from '../components/EventDetailPanel';
 
 class EventDetail extends React.Component {
 
-    loadDetail(id) {
-
-    }
-
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.props.dispatch(applicationActions.fetchGetApplications());
     }
 
@@ -23,7 +19,7 @@ class EventDetail extends React.Component {
         const state = this.props.location.state;
 
         const content = appId && level
-            ? <EventDetailPanel appId={appId} level={level} {...state} />
+            ? <EventDetailPanel appId={appId} level={level} key={appId} {...state} />
             : <EventHelper />;
 
         return (

@@ -12,7 +12,7 @@ class EventSummary extends React.Component {
 
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.props.dispatch(applicationActions.fetchGetApplications());
     }
 

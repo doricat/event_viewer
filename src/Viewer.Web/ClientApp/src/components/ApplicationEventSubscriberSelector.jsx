@@ -79,7 +79,7 @@ export class ApplicationEventSubscriberSelector extends React.Component {
         }
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         const { location, match, loadUsers, loadDetail } = this.props;
         if (location.state === undefined && this.props.loading === false) {
             loadDetail(match.params.id);

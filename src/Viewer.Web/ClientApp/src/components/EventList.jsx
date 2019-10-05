@@ -65,7 +65,7 @@ class EventList extends React.Component {
         const boxHeight = this.Box.current.offsetParent.clientHeight + 54 /*filter height*/ + 73 /*nav height*/ + 16 /*nav margin bottom*/;
         const yOffset = window.pageYOffset + window.innerHeight;
 
-        if (yOffset >= boxHeight && this.renderCompeted === true) {
+        if (yOffset >= boxHeight && this.state.list.length < this.props.dataCount && this.renderCompeted === true) {
             this.renderCompeted = false;
             this.props.loadMore();
         }

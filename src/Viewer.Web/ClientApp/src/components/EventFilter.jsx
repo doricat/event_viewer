@@ -37,7 +37,7 @@ class EventFilter extends React.Component {
         });
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         if (this.props.fromSummary === true) {
             this.search();
         }

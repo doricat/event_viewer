@@ -5,7 +5,7 @@ import { actions } from '../store/ui';
 
 class Monitor extends React.Component {
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         const { dispatch } = this.props;
         dispatch(actions.fixNavMenu());
     }

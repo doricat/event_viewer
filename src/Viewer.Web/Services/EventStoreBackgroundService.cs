@@ -14,12 +14,12 @@ namespace Viewer.Web.Services
     {
         public EventStoreBackgroundService(ILogger<EventStoreBackgroundService> logger,
             IEventStoreQueue storeQueue,
-            //IHubContext<EventHub> context, 
+            IHubContext<EventHub> context, 
             EventWriter eventWriter)
         {
             Logger = logger;
             StoreQueue = storeQueue;
-            //Context = context;
+            Context = context;
             EventWriter = eventWriter;
         }
 
@@ -27,7 +27,7 @@ namespace Viewer.Web.Services
 
         public IEventStoreQueue StoreQueue { get; }
 
-        //public IHubContext<EventHub> Context { get; }
+        public IHubContext<EventHub> Context { get; }
 
         public EventWriter EventWriter { get; }
 
