@@ -28,8 +28,7 @@ class EventDetail extends React.Component {
                     <EventNavMenu
                         pathname="/event/detail"
                         loading={this.props.applicationListLoadingState}
-                        applications={this.props.applications}
-                        onClick={(id) => this.loadDetail(id)} />
+                        applications={this.props.applications} />
                 </Col>
                 <Col md={9}>
                     {content}

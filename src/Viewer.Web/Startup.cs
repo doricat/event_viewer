@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,7 +11,6 @@ using Microsoft.IdentityModel.Tokens;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
-using Viewer.Web.Extensions.Logging;
 using Viewer.Web.Hubs;
 using Viewer.Web.Services;
 using Viewer.Web.Utilities;
@@ -58,6 +58,21 @@ namespace Viewer.Web
                         IssuerSigningKey = new SymmetricSecurityKey(key),
                         ValidateIssuer = false,
                         ValidateAudience = false
+                    };
+
+                    x.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/EventHub"))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
