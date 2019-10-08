@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { NavDropdown } from 'react-bootstrap';
 import authorizeService from '../services/AuthorizeService';
+import { connect } from 'react-redux';
 
 class LoginMenu extends React.Component {
 
@@ -13,6 +14,16 @@ class LoginMenu extends React.Component {
             username: null,
             dropdownShow: false
         };
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (props.profiles && props.profiles.name !== state.username) {
+            return {
+                username: props.profiles.name
+            };
+        }
+
+        return null;
     }
 
     componentDidMount() {
@@ -75,4 +86,6 @@ class LoginMenu extends React.Component {
     }
 }
 
-export default LoginMenu;
+export default connect(state => {
+    return { profiles: state.user.current.profiles }
+})(LoginMenu);

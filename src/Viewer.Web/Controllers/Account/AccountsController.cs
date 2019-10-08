@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Account;
 using Viewer.Web.Data;
@@ -24,13 +25,17 @@ namespace Viewer.Web.Controllers
             UserManager<User> userManager,
             IdentityGenerator identityGenerator,
             RoleManager<Role> roleManager,
-            FileManager fileManager)
+            FileManager fileManager,
+            IOptionsMonitor<PrimarySettings> primarySettings,
+            IdentityErrorDescriber errorDescriber)
         {
             Logger = logger;
             UserManager = userManager;
             IdentityGenerator = identityGenerator;
             RoleManager = roleManager;
             FileManager = fileManager;
+            ErrorDescriber = errorDescriber;
+            PrimarySettings = primarySettings.CurrentValue;
         }
 
         public ILogger<AccountsController> Logger { get; }
@@ -43,9 +48,13 @@ namespace Viewer.Web.Controllers
 
         public FileManager FileManager { get; }
 
+        public PrimarySettings PrimarySettings { get; }
+
+        public IdentityErrorDescriber ErrorDescriber { get; }
+
         [HttpGet]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Gets()
         {
             var users = await UserManager.Users.ToListAsync(HttpContext.RequestAborted);
 
@@ -59,10 +68,15 @@ namespace Viewer.Web.Controllers
         }
 
         [Authorize]
-        [HttpGet("{id}")]
-        public IActionResult Get(string id)
+        [HttpGet("current/profiles")]
+        public async Task<IActionResult> Get()
         {
-            throw new NotImplementedException();
+            var user = await UserManager.FindByEmailAsync(User.Identity.Name);
+            return Ok(new ApiResult<UserProfilesOutputModel>(new UserProfilesOutputModel
+            {
+                Name = user.Name,
+                Avatar = user.Avatar
+            }));
         }
 
         [HttpPost]
@@ -72,7 +86,10 @@ namespace Viewer.Web.Controllers
             var result = await UserManager.CreateAsync(new User
             {
                 Id = id,
-                Email = model.Email
+                Email = model.Email,
+                UserName = model.Email,
+                Name = model.Name,
+                Avatar = PrimarySettings.DefaultAvatar
             }, model.Password);
 
             if (result.Succeeded)
@@ -109,10 +126,44 @@ namespace Viewer.Web.Controllers
         public async Task<IActionResult> Patch([FromBody] UserNameInputModel model)
         {
             var user = await UserManager.FindByEmailAsync(User.Identity.Name);
-            user.Name = model.Name = model.Name;
+            user.Name = model.Name;
             await UserManager.UpdateAsync(user);
 
             return NoContent();
+        }
+
+        [Authorize]
+        [HttpPatch("current/password")]
+        public async Task<IActionResult> Patch([FromBody] AccountPasswordPatchModel model)
+        {
+            var user = await UserManager.FindByEmailAsync(User.Identity.Name);
+            var result = await UserManager.ChangePasswordAsync(user, model.CurrentPassword, model.Password);
+            if (result.Succeeded)
+            {
+                return NoContent();
+            }
+
+            if (result.Errors.FirstOrDefault(x => x.Code == ErrorDescriber.PasswordMismatch().Code) != null)
+            {
+                return BadRequest(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "当前密码验证失败。")));
+            }
+
+            throw new NotImplementedException();
+        }
+
+        [Authorize]
+        [HttpDelete("current/profiles/avatar")]
+        public async Task<IActionResult> Delete()
+        {
+            var user = await UserManager.FindByEmailAsync(User.Identity.Name);
+            user.Avatar = PrimarySettings.DefaultAvatar;
+            var result = await UserManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                return NoContent();
+            }
+
+            throw new NotImplementedException();
         }
     }
 }

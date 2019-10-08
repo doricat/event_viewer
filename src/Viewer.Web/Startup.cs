@@ -102,6 +102,11 @@ namespace Viewer.Web
             services.AddMyHostedService();
 
             services.Configure<EventWriterOptions>(x => x.CurrentApplicationId = 281482820257685);
+            services.Configure<PrimarySettings>(x =>
+            {
+                x.CurrentApplicationId = 281482820257685;
+                x.DefaultAvatar = "/api/images/281524743956263";
+            });
 
             services.AddSignalR();
         }

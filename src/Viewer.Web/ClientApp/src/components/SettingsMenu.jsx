@@ -18,7 +18,7 @@ const MenuLink = ({ label, to, activeOnlyWhenExact }) => (
 export default () => (
     <ListGroup>
         <ListGroup.Item disabled as="a">设置</ListGroup.Item>
-        <MenuLink to="/settings/profile" label="个人资料" activeOnlyWhenExact={true} />
-        <MenuLink to="/settings/security" label="安全" activeOnlyWhenExact={true} />
+        <MenuLink to="/account/settings/profile" label="个人资料" activeOnlyWhenExact={true} />
+        <MenuLink to="/account/settings/security" label="安全" activeOnlyWhenExact={true} />
     </ListGroup>
 );

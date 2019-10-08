@@ -11,6 +11,13 @@ const descriptor = {
             (value) => maxLength(value, 120, descriptor.email.displayName)
         ]
     },
+    name: {
+        displayName: "名称",
+        validators: [
+            (value) => required(value, descriptor.name.displayName),
+            (value) => maxLength(value, 20, descriptor.name.displayName)
+        ]
+    },
     password: {
         displayName: "密码",
         validators: [
@@ -33,9 +40,12 @@ class RegisterForm extends React.Component {
 
         this.state = {
             isSubmitting: false,
-            email: "",
-            password: "",
-            confirmPassword: "",
+            formModel: {
+                email: "",
+                name: "",
+                password: "",
+                confirmPassword: ""
+            },
             apiResult: null,
             errors: {
                 email: null,
@@ -46,16 +56,15 @@ class RegisterForm extends React.Component {
     }
 
     handleChange(key, value) {
-        let obj = {};
-        obj[key] = value;
-        this.setState(obj);
+        const formModel = { ...this.state.formModel };
+        formModel[key] = value;
+        this.setState({ formModel });
     }
 
     handleSubmit(event) {
         event.preventDefault();
 
-        const { email, password, confirmPassword } = this.state;
-        const model = { email, password, confirmPassword };
+        const model = { ...this.state.formModel };
         const result = validate(model, descriptor);
 
         if (result.hasError) {
@@ -70,8 +79,7 @@ class RegisterForm extends React.Component {
     }
 
     handleValidate(key) {
-        const { email, password, confirmPassword } = this.state;
-        const model = { email, password, confirmPassword };
+        const model = { ...this.state.formModel };
         const result = validate(model, descriptor);
 
         let errors = { ...this.state.errors };
@@ -140,7 +148,7 @@ class RegisterForm extends React.Component {
                     <Form.Label>电子邮件</Form.Label>
                     <Form.Control isInvalid={this.state.errors.email} type="email"
                         disabled={this.state.isSubmitting}
-                        value={this.state.email}
+                        value={this.state.formModel.email}
                         onChange={(x) => this.handleChange("email", x.target.value)}
                         onBlur={() => this.handleValidate("email")}
                         autoComplete="off" />
@@ -148,10 +156,21 @@ class RegisterForm extends React.Component {
                 </Form.Group>
 
                 <Form.Group>
+                    <Form.Label>名称</Form.Label>
+                    <Form.Control isInvalid={this.state.errors.name} type="text"
+                        disabled={this.state.isSubmitting}
+                        value={this.state.formModel.name}
+                        onChange={(x) => this.handleChange("name", x.target.value)}
+                        onBlur={() => this.handleValidate("name")}
+                        autoComplete="off" />
+                    <Form.Control.Feedback type="invalid">{this.state.errors.name}</Form.Control.Feedback>
+                </Form.Group>
+
+                <Form.Group>
                     <Form.Label>密码</Form.Label>
                     <Form.Control isInvalid={this.state.errors.password} type="password"
                         disabled={this.state.isSubmitting}
-                        value={this.state.password}
+                        value={this.state.formModel.password}
                         onChange={(x) => this.handleChange("password", x.target.value)}
                         onBlur={() => this.handleValidate("password")} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.password}</Form.Control.Feedback>
@@ -161,7 +180,7 @@ class RegisterForm extends React.Component {
                     <Form.Label>确认密码</Form.Label>
                     <Form.Control isInvalid={this.state.errors.confirmPassword} type="password"
                         disabled={this.state.isSubmitting}
-                        value={this.state.confirmPassword}
+                        value={this.state.formModel.confirmPassword}
                         onChange={(x) => this.handleChange("confirmPassword", x.target.value)}
                         onBlur={() => this.handleValidate("confirmPassword")} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.confirmPassword}</Form.Control.Feedback>

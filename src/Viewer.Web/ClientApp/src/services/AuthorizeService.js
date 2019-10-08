@@ -34,7 +34,7 @@ export class AuthorizeService {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    username: state.username,
+                    username: state.email,
                     password: state.password
                 })
             });

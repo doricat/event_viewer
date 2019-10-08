@@ -93,6 +93,7 @@ namespace Viewer.Web.Data
                 builder.Property(x => x.ContentType).HasMaxLength(50).IsRequired();
                 builder.Property(x => x.Size).IsRequired();
                 builder.Property(x => x.RawName);
+                builder.Property(x => x.Stream);
             });
         }
     }

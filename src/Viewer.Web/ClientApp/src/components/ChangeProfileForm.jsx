@@ -1,18 +1,149 @@
 import React from 'react';
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
+import { required, maxLength, validate } from '../services/validators';
+import authorizeService from '../services/AuthorizeService';
+import { actions as uiActions } from '../store/ui';
+import { push } from 'connected-react-router';
+import { connect } from 'react-redux';
+
+const descriptor = {
+    name: {
+        displayName: "名称",
+        validators: [
+            (value) => required(value, descriptor.name.displayName),
+            (value) => maxLength(value, 20, descriptor.name.displayName)
+        ]
+    }
+};
 
 class ChangeProfileForm extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            isSubmitting: false,
+            formModel: {
+                name: this.props.name
+            },
+            apiResult: null,
+            errors: {
+                name: null
+            }
+        };
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        if (state.formModel.name === "" && props.name !== state.formModel.name) {
+            return {
+                formModel: {
+                    name: props.name
+                }
+            };
+        }
+
+        return null;
+    }
+
+    handleChange(key, value) {
+        let model = {};
+        model[key] = value;
+        this.setState({ formModel: model });
+    }
+
+    async handleSubmit(event) {
+        event.preventDefault();
+
+        const model = { ...this.state.formModel };
+        const result = validate(model, descriptor);
+
+        if (result.hasError) {
+            let errors = { ...this.state.errors };
+            result.copyMessages(result, errors);
+            this.setState({ errors: errors });
+            return;
+        }
+
+        this.setState({ isSubmitting: true, apiResult: null });
+
+        const token = await authorizeService.getAccessToken();
+        let headers = !token ? {} : { "Authorization": `Bearer ${token}` };
+        headers["Content-Type"] = "application/json";
+        const response = await fetch("/api/accounts/current/profiles/name", {
+            method: "PATCH",
+            headers: headers,
+            body: JSON.stringify(model)
+        });
+
+        this.setState({ isSubmitting: false });
+
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.startsWith("application/json")) {
+            const json = await response.json();
+
+            if (response.status >= 400 && response.status < 500) {
+                const { code, message } = json.error;
+                let state = {
+                    apiResult: { code, message }
+                };
+                this.setState(state);
+                return;
+            }
+
+            if (response.status === 500) {
+                this.props.dispatch(uiActions.setGlobalError(true, json.error.message));
+                return;
+            }
+
+            console.error(json);
+        } else {
+            if (response.ok === true) {
+                this.props.reloadProfiles();
+                return;
+            }
+
+            if (response.status === 401) {
+                authorizeService.signOut();
+                this.props.dispatch(push("/account/login"));
+            }
+        }
+    }
+
+    handleValidate(key) {
+        const model = { ...this.state.formModel };
+        const result = validate(model, descriptor);
+
+        let errors = { ...this.state.errors };
+        if (result.hasError) {
+            errors[key] = result[key];
+        } else {
+            errors[key] = null;
+        }
+
+        this.setState({ errors: errors });
+    }
+
     render() {
         return (
-            <Form >
-
+            <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
+                {
+                    this.state.apiResult !== null
+                        ?
+                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
+                        :
+                        null
+                }
                 <Form.Group>
                     <Form.Label>名称</Form.Label>
-                    <Form.Control type="text" />
+                    <Form.Control isInvalid={this.state.errors.name} type="text"
+                        disabled={this.state.isSubmitting}
+                        value={this.state.formModel.name}
+                        onChange={(x) => this.handleChange("name", x.target.value)}
+                        onBlur={() => this.handleValidate("name")} />
+                    <Form.Control.Feedback type="invalid">{this.state.errors.name}</Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group >
-                    <Button type="submit" variant="primary">更行</Button>
+                    <Button type="submit" variant="primary" disabled={this.state.isSubmitting}>更新</Button>
                 </Form.Group>
 
             </Form>
@@ -20,4 +151,4 @@ class ChangeProfileForm extends React.Component {
     }
 }
 
-export default ChangeProfileForm;
+export default connect()(ChangeProfileForm);

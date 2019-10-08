@@ -3,6 +3,8 @@ import { Form, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import authorizeService from '../services/AuthorizeService';
 import { required, validate } from '../services/validators';
+import { actions as userActions } from '../store/user';
+import { connect } from 'react-redux';
 
 const descriptor = {
     email: {
@@ -16,6 +18,10 @@ const descriptor = {
         validators: [
             (value) => required(value, descriptor.password.displayName)
         ]
+    },
+    rememberMe: {
+        displayName: "记住我",
+        validators: []
     }
 };
 
@@ -25,9 +31,11 @@ class LoginForm extends React.Component {
 
         this.state = {
             isSubmitting: false,
-            email: "",
-            password: "",
-            rememberMe: false,
+            formModel: {
+                email: "",
+                password: "",
+                rememberMe: true,
+            },
             apiResult: null,
             invalid: {
                 email: false,
@@ -37,16 +45,15 @@ class LoginForm extends React.Component {
     }
 
     handleChange(key, value) {
-        let obj = {};
-        obj[key] = value;
-        this.setState(obj);
+        let formModel = { ...this.state.formModel };
+        formModel[key] = value;
+        this.setState({ formModel });
     }
 
     handleSubmit(event) {
         event.preventDefault();
 
-        const { email, password } = this.state;
-        const model = { email, password };
+        const model = { ...this.state.formModel };
         const result = validate(model, descriptor);
 
         if (result.hasError) {
@@ -63,13 +70,10 @@ class LoginForm extends React.Component {
 
         this.setState({ isSubmitting: true, apiResult: null });
 
-        authorizeService.signIn({
-            username: this.state.email,
-            password: this.state.password,
-            rememberMe: this.state.rememberMe
-        }).then(result => {
+        authorizeService.signIn(model).then(result => {
             this.setState({ isSubmitting: false });
             if (result.succeeded === true) {
+                this.props.loadProfiles();
                 this.props.navigate();
             } else {
                 const { code, message } = result;
@@ -78,15 +82,17 @@ class LoginForm extends React.Component {
                         code,
                         message
                     },
-                    password: ""
+                    formModel: {
+                        ...this.state.formModel,
+                        password: ""
+                    }
                 });
             }
         });
     }
 
     handleValidate(key) {
-        const { email, password } = this.state;
-        const model = { email, password };
+        const model = { ...this.state.formModel };
         const result = validate(model, descriptor);
 
         let invalid = { ...this.state.invalid };
@@ -116,9 +122,10 @@ class LoginForm extends React.Component {
                     <Form.Control isInvalid={this.state.invalid.email} type="email"
                         disabled={this.state.isSubmitting}
                         onChange={(x) => this.handleChange("email", x.target.value)}
-                        value={this.state.email}
+                        value={this.state.formModel.email}
                         onBlur={() => this.handleValidate("email")}
-                        autoComplete="off" />
+                        autoComplete="off"
+                        maxLength="120" />
                 </Form.Group>
 
                 <Form.Group>
@@ -126,12 +133,14 @@ class LoginForm extends React.Component {
                     <Form.Control isInvalid={this.state.invalid.password} type="password"
                         disabled={this.state.isSubmitting}
                         onChange={(x) => this.handleChange("password", x.target.value)}
-                        value={this.state.password}
-                        onBlur={() => this.handleValidate("password")} />
+                        value={this.state.formModel.password}
+                        onBlur={() => this.handleValidate("password")}
+                        maxLength="16" />
                 </Form.Group>
 
                 <Form.Group >
                     <Form.Check type="checkbox" label="记住我"
+                        checked={this.state.formModel.rememberMe}
                         disabled={this.state.isSubmitting}
                         onChange={(x) => this.handleChange("rememberMe", x.target.checked)} />
                 </Form.Group>
@@ -151,4 +160,8 @@ class LoginForm extends React.Component {
     }
 }
 
-export default LoginForm;
+export default connect(null, dispatch => {
+    return {
+        loadProfiles: () => dispatch(userActions.fetchLoadCurrentProfiles())
+    };
+})(LoginForm);

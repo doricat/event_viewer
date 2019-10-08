@@ -30,6 +30,11 @@ namespace Viewer.Web.Controllers
                 return NotFound();
             }
 
+            if (metadata.Stream != null)
+            {
+                return File(metadata.Stream, metadata.ContentType);
+            }
+
             var file = System.IO.File.Open(metadata.Filename, FileMode.Open);
             return File(file, metadata.ContentType);
         }

@@ -11,5 +11,7 @@
         public int Size { get; set; }
 
         public string RawName { get; set; }
+
+        public byte[] Stream { get; set; }
     }
 }
