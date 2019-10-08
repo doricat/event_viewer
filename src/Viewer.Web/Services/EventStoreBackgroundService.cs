@@ -21,7 +21,7 @@ namespace Viewer.Web.Services
             IHubContext<EventHub> context,
             EventWriter eventWriter,
             IdentityGenerator identityGenerator,
-            IOptionsMonitor<EventWriterOptions> options, IMemoryCache memoryCache)
+            IOptionsMonitor<PrimarySettings> options, IMemoryCache memoryCache)
         {
             Logger = logger;
             StoreQueue = storeQueue;
@@ -42,7 +42,7 @@ namespace Viewer.Web.Services
 
         public IdentityGenerator IdentityGenerator { get; }
 
-        public EventWriterOptions Options { get; }
+        public PrimarySettings Options { get; }
 
         public IMemoryCache MemoryCache { get; }
 
