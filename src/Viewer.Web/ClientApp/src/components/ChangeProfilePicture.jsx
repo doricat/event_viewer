@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 class ChangeProfilePicture extends React.Component {
     constructor(props) {
         super(props);
-        
+
         this.state = {
             isSubmitting: false,
             apiResult: null
@@ -94,7 +94,7 @@ class ChangeProfilePicture extends React.Component {
                 }
                 <div>
                     <Image src={this.props.avatar} rounded />
-                    <DropdownButton title="编辑" variant="dark" size="sm" style={{ position: "relative", left: "10px", top: "-40px" }}>
+                    <DropdownButton title="编辑" variant="dark" size="sm" style={{ position: "relative", left: "10px", top: "-40px", display: this.props.avatar === "" ? "none" : "block" }}>
                         <Dropdown.Item as="button" onClick={() => this.openDialog()}>上传照片</Dropdown.Item>
                         <Dropdown.Item as="button" onClick={() => this.removeAvatar()}>移除照片</Dropdown.Item>
                     </DropdownButton>

@@ -9,6 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.Primitives;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Account;
 using Viewer.Web.Data;
@@ -111,11 +116,48 @@ namespace Viewer.Web.Controllers
             using (var stream = new MemoryStream())
             {
                 await model.File.CopyToAsync(stream);
-                var id = await FileManager.CreateFileAsync(stream, model.File.ContentType, model.File.FileName);
+                using (var imageStream = new MemoryStream())
+                {
+                    // 将文件剪裁为180 * 180 px
+                    const int px = 180;
+                    stream.Seek(0, SeekOrigin.Begin);
+                    using (var image = Image.Load(stream))
+                    {
+                        if (image.Width < image.Height)
+                        {
+                            var times = (decimal) image.Height / image.Width;
+                            image.Mutate(x => x.Resize(px, (int) (px * times)));
+                        }
+                        else
+                        {
+                            var times = (decimal) image.Width / image.Height;
+                            image.Mutate(x => x.Resize((int) (px * times), px));
+                        }
 
-                var location = $"/api/images/{id}";
-                user.Avatar = location;
-                await UserManager.UpdateAsync(user);
+                        image.Mutate(x => x.Crop(new Rectangle(0, 0, px, px)));
+
+                        switch (model.File.ContentType.ToLower())
+                        {
+                            case "image/jpeg":
+                            case "image/jpg":
+                                image.Save(imageStream, new JpegEncoder());
+                                break;
+
+                            case "image/png":
+                                image.Save(imageStream, new PngEncoder());
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+
+                    var id = await FileManager.CreateFileAsync(imageStream, model.File.ContentType, model.File.FileName);
+
+                    var location = $"/api/images/{id}";
+                    user.Avatar = location;
+                    await UserManager.UpdateAsync(user);
+                }
 
                 return NoContent();
             }

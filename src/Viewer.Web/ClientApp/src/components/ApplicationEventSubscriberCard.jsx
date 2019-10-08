@@ -30,7 +30,7 @@ class SubscriberCard extends React.Component {
             <Card style={style} onClick={() => this.select(user.id)} border={this.props.selected === true ? "primary" : "light"}>
                 <Card.Img variant="top" src={user.avatar} />
                 <Card.Body>
-                    <Card.Title>{user.name}</Card.Title>
+                    {user.name}
                 </Card.Body>
             </Card>
         );
