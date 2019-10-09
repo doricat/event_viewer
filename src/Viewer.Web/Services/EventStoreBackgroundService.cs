@@ -18,7 +18,7 @@ namespace Viewer.Web.Services
     {
         public EventStoreBackgroundService(ILogger<EventStoreBackgroundService> logger,
             IEventStoreQueue storeQueue,
-            IHubContext<EventHub> context,
+            IHubContext<EventHub, IEventClient> context,
             EventWriter eventWriter,
             IdentityGenerator identityGenerator,
             IOptionsMonitor<PrimarySettings> options, IMemoryCache memoryCache)
@@ -36,7 +36,7 @@ namespace Viewer.Web.Services
 
         public IEventStoreQueue StoreQueue { get; }
 
-        public IHubContext<EventHub> Context { get; }
+        public IHubContext<EventHub, IEventClient> Context { get; }
 
         public EventWriter EventWriter { get; }
 
@@ -71,7 +71,8 @@ namespace Viewer.Web.Services
                 try
                 {
                     await EventWriter.WriteAsync(evt, stoppingToken);
-                    await Context.Clients.Group(Options.CurrentApplicationId.ToString()).SendAsync("ReceiveMessage", new EventViewModel
+
+                    await Context.Clients.Group(Options.CurrentApplicationId.ToString()).ReceiveMessage(new EventViewModel
                     {
                         Id = id,
                         Level = item.Level,
@@ -81,7 +82,7 @@ namespace Viewer.Web.Services
                         EventId = item.EventId,
                         EventType = item.EventType,
                         Timestamp = item.Timestamp
-                    }, stoppingToken);
+                    });
                 }
                 catch (Exception ex)
                 {

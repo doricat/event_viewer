@@ -5,16 +5,12 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 
 class Register extends React.Component {
-    navigate() {
-        this.props.push("/account/login");
-    }
-
     render() {
         return (
             <Row>
                 <Col md={4}>
                     <section>
-                        <RegisterForm navigate={() => this.navigate()} />
+                        <RegisterForm navigate={() => this.props.push("/account/login")} />
                     </section>
                 </Col>
 

@@ -7,15 +7,6 @@ import { actions as applicationActions } from '../store/application';
 import EventSummaryPanel from '../components/EventSummaryPanel';
 
 class EventSummary extends React.Component {
-
-    loadSummary(id) {
-
-    }
-
-    componentDidMount() {
-        this.props.dispatch(applicationActions.fetchGetApplications());
-    }
-
     render() {
         const params = new URLSearchParams(this.props.location.search);
         const appId = params.get("application");
@@ -26,9 +17,8 @@ class EventSummary extends React.Component {
                 <Col md={3}>
                     <EventNavMenu
                         pathname="/event/summary"
-                        loading={this.props.applicationListLoadingState}
                         applications={this.props.applications}
-                        onClick={(id) => this.loadSummary(id)} />
+                        load={(callback) => this.props.loadApplications(callback)} />
                 </Col>
                 <Col md={9}>
                     {content}
@@ -40,7 +30,10 @@ class EventSummary extends React.Component {
 
 export default connect(state => {
     return {
-        applicationListLoadingState: state.ui.applicationListLoadingState,
         applications: state.application.list
+    };
+}, dispatch => {
+    return {
+        loadApplications: (callback) => dispatch(applicationActions.fetchGetApplications(callback))
     };
 })(EventSummary);

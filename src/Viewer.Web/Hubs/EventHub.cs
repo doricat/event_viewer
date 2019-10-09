@@ -29,7 +29,7 @@ namespace Viewer.Web.Hubs
 
             var userId = Context.User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier);
             // 检查当前用户是否和对应的应用程序关联
-
+            
             var id = Context.ConnectionId;
             MemoryCache.Set(id, new MonitorSettings
             {

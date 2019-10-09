@@ -14,23 +14,34 @@ export class ApplicationEventSubscriberSelector extends React.Component {
         this.state = {
             isSubmitting: false,
             apiResult: null,
-            userList: [...props.application.userList]
+            users: [],
+            selectedList: undefined
         };
     }
 
-    handleSelect(userId) {
-        let userList = [...this.state.userList];
-        const index = userList.findIndex(x => x === userId);
-        if (index === -1) {
-            userList.push(userId);
-        } else {
-            userList.splice(index, 1);
+    static getDerivedStateFromProps(props, state) {
+        if (state.selectedList === undefined && props.application) {
+            return {
+                selectedList: [...props.application.userList]
+            };
         }
-        this.setState({ userList });
+
+        return null;
+    }
+
+    handleSelect(userId) {
+        let selectedList = [...this.state.selectedList];
+        const index = selectedList.findIndex(x => x === userId);
+        if (index === -1) {
+            selectedList.push(userId);
+        } else {
+            selectedList.splice(index, 1);
+        }
+        this.setState({ selectedList });
     }
 
     async save() {
-        this.setState({ isSubmitting: true });
+        this.setState({ isSubmitting: true, apiResult: null });
 
         const token = await authorizeService.getAccessToken();
         let headers = !token ? {} : { "Authorization": `Bearer ${token}` };
@@ -39,7 +50,7 @@ export class ApplicationEventSubscriberSelector extends React.Component {
             method: "PATCH",
             headers: headers,
             body: JSON.stringify({
-                userList: this.state.userList
+                userList: this.state.selectedList
             })
         });
 
@@ -48,10 +59,6 @@ export class ApplicationEventSubscriberSelector extends React.Component {
         const contentType = response.headers.get("content-type") || "";
         if (contentType.startsWith("application/json")) {
             const json = await response.json();
-
-            // if (response.ok === true) {
-            // return;
-            // }
 
             if (response.status >= 400 && response.status < 500) {
                 const { code, message } = json.error;
@@ -67,7 +74,7 @@ export class ApplicationEventSubscriberSelector extends React.Component {
             console.error(json);
         } else {
             if (response.ok === true) {
-                this.props.dispatch(push(`/application/${this.props.match.params.id}`));
+                this.props.dispatch(push(`/application/${this.props.application.id}`));
                 return;
             }
 
@@ -79,48 +86,91 @@ export class ApplicationEventSubscriberSelector extends React.Component {
         }
     }
 
-    componentDidMount() {
-        const { location, match, loadUsers, loadDetail } = this.props;
-        if (location.state === undefined && this.props.loading === false) {
-            loadDetail(match.params.id);
-            loadUsers();
+    async loadAllUsers() {
+        const token = await authorizeService.getAccessToken();
+        const response = await fetch("/api/accounts", {
+            headers: !token ? {} : { "Authorization": `Bearer ${token}` }
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.startsWith("application/json")) {
+            const json = await response.json();
+
+            if (response.ok === true) {
+                this.setState({ users: json.value })
+                return;
+            }
+
+            if (response.status >= 400 && response.status < 500) {
+                const { code, message } = json.error;
+                this.setState({ apiResult: { code, message } });
+                return;
+            }
+
+            if (response.status === 500) {
+                this.props.setGlobalError(json.error.message)
+                return;
+            }
+
+            console.error(json);
+        } else {
+            if (response.status === 401) {
+                authorizeService.signOut();
+                this.props.redirectToLogin()
+                return;
+            }
+
+            if (response.status === 403) {
+                this.props.redirectToUnauthorized();
+                return;
+            }
         }
+    }
+
+    componentDidMount() {
+        this.loadAllUsers();
     }
 
     render() {
-        if (this.props.users && this.props.users.length > 0) {
-            const { isSubmitting } = this.state;
+        const { isSubmitting } = this.state;
 
-            return (
-                <>
-                    {
-                        this.state.apiResult !== null
-                            ?
-                            <Alert variant="warning">{this.state.apiResult.message}</Alert>
-                            :
-                            null
-                    }
-                    <CardColumns style={{ columnCount: "5" }}>
-                        {this.props.users.map(user => (
-                            <SubscriberCard
-                                user={user}
-                                selected={this.state.userList.findIndex(x => x === user.id) !== -1}
-                                select={(x, y) => this.handleSelect(x, y)}
-                                isSubmitting={isSubmitting}
-                                key={user.id.toString()} />))}
-                    </CardColumns>
+        return (
+            <>
+                {
+                    this.state.apiResult !== null
+                        ?
+                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
+                        :
+                        null
+                }
+                <CardColumns style={{ columnCount: "5" }}>
+                    {this.state.users.map(user => (
+                        <SubscriberCard
+                            user={user}
+                            selected={this.state.selectedList.findIndex(x => x === user.id) !== -1}
+                            select={(x, y) => this.handleSelect(x, y)}
+                            isSubmitting={isSubmitting}
+                            key={user.id.toString()} />))}
+                </CardColumns>
 
-                    <br />
-                    <Button variant="primary" className="mr-2" disabled={isSubmitting} onClick={() => this.save()}>保存</Button>
-                    <Button variant="secondary" disabled={isSubmitting} onClick={() => this.props.cancel()}>放弃</Button>
-                </>
-            );
-        }
-
-        return LoadingAlert();
+                <br />
+                <Button variant="primary" className="mr-2" disabled={isSubmitting} onClick={() => this.save()}>保存</Button>
+                <Button variant="secondary" disabled={isSubmitting} onClick={() => this.props.cancel(this.props.application.id)}>放弃</Button>
+            </>
+        );
     }
 }
 
-const LoadingAlert = () => (<Alert variant="info"><i>加载中...</i></Alert>);
 
-export default connect()(loading(ApplicationEventSubscriberSelector, LoadingAlert));
+export default loading(connect(null, dispatch => {
+    return {
+        cancel: (id) => dispatch(push(`/application/${id}`)),
+        redirectToLogin: () => dispatch(push("/account/login")),
+        redirectToUnauthorized: () => dispatch(push("/unauthorized")),
+        setGlobalError: (message) => dispatch(uiActions.setGlobalError(true, message))
+    }
+})(ApplicationEventSubscriberSelector), () =>
+    (
+        <Alert variant="info"><i>加载中...</i></Alert>
+    )
+);

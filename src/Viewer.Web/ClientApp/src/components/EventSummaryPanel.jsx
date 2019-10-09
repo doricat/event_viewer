@@ -11,7 +11,6 @@ class EventSummaryPanel extends React.Component {
         super(props);
 
         const obj = {
-            loading: true,
             apiResult: undefined,
             apiError: null
         };
@@ -26,11 +25,13 @@ class EventSummaryPanel extends React.Component {
         };
     }
 
-    async loadSummary(id, level) {
+    async loadSummary(id, level, callback) {
         const token = await authorizeService.getAccessToken();
         const response = await fetch(`/api/applications/${id}/events/statistics/${level}`, {
             headers: !token ? {} : { "Authorization": `Bearer ${token}` }
         });
+
+        callback();
 
         const contentType = response.headers.get("content-type") || "";
         if (contentType.startsWith("application/json")) {
@@ -42,7 +43,6 @@ class EventSummaryPanel extends React.Component {
             if (response.ok === true) {
                 let state = {};
                 state[key] = {
-                    loading: false,
                     apiError: null,
                     apiResult: json.value
                 };
@@ -55,7 +55,6 @@ class EventSummaryPanel extends React.Component {
                 let state = {};
                 state[key] = {
                     apiError: { code, message },
-                    loading: false,
                     apiResult: undefined
                 };
                 this.setState(state);
@@ -63,7 +62,7 @@ class EventSummaryPanel extends React.Component {
             }
 
             if (response.status === 500) {
-                this.props.dispatch(uiActions.setGlobalError(true, json.error.message));
+                this.props.setGlobalError(json.error.message);
                 return;
             }
 
@@ -71,7 +70,7 @@ class EventSummaryPanel extends React.Component {
         } else {
             if (response.status === 401) {
                 authorizeService.signOut();
-                this.props.dispatch(push("/account/login"));
+                this.props.redirectToLogin();
             }
         }
     }
@@ -80,15 +79,20 @@ class EventSummaryPanel extends React.Component {
         const { appId } = this.props;
         return (
             <CardColumns>
-                <EventSummaryCard appId={appId} level="Critical" loading={this.state.critical.loading} load={() => this.loadSummary(appId, "Critical")} statisticsResult={this.state.critical.apiResult} />
-                <EventSummaryCard appId={appId} level="Error" loading={this.state.error.loading} load={() => this.loadSummary(appId, "Error")} statisticsResult={this.state.error.apiResult} />
-                <EventSummaryCard appId={appId} level="Warning" loading={this.state.warning.loading} load={() => this.loadSummary(appId, "Warning")} statisticsResult={this.state.warning.apiResult} />
-                <EventSummaryCard appId={appId} level="Info" loading={this.state.info.loading} load={() => this.loadSummary(appId, "Information")} statisticsResult={this.state.info.apiResult} />
-                <EventSummaryCard appId={appId} level="Debug" loading={this.state.debug.loading} load={() => this.loadSummary(appId, "Debug")} statisticsResult={this.state.debug.apiResult} />
-                <EventSummaryCard appId={appId} level="Trace" loading={this.state.trace.loading} load={() => this.loadSummary(appId, "Trace")} statisticsResult={this.state.trace.apiResult} />
+                <EventSummaryCard appId={appId} level="Critical" load={(callback) => this.loadSummary(appId, "Critical", callback)} statisticsResult={this.state.critical.apiResult} />
+                <EventSummaryCard appId={appId} level="Error" load={(callback) => this.loadSummary(appId, "Error", callback)} statisticsResult={this.state.error.apiResult} />
+                <EventSummaryCard appId={appId} level="Warning" load={(callback) => this.loadSummary(appId, "Warning", callback)} statisticsResult={this.state.warning.apiResult} />
+                <EventSummaryCard appId={appId} level="Info" load={(callback) => this.loadSummary(appId, "Information", callback)} statisticsResult={this.state.info.apiResult} />
+                <EventSummaryCard appId={appId} level="Debug" load={(callback) => this.loadSummary(appId, "Debug", callback)} statisticsResult={this.state.debug.apiResult} />
+                <EventSummaryCard appId={appId} level="Trace" load={(callback) => this.loadSummary(appId, "Trace", callback)} statisticsResult={this.state.trace.apiResult} />
             </CardColumns>
         );
     }
 }
 
-export default connect()(EventSummaryPanel);
+export default connect(null, dispatch => {
+    return {
+        redirectToLogin: () => dispatch(push("/account/login")),
+        setGlobalError: (message) => dispatch(uiActions.setGlobalError(true, message))
+    };
+})(EventSummaryPanel);

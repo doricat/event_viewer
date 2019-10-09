@@ -7,11 +7,6 @@ import { actions as applicationActions } from '../store/application';
 import EventDetailPanel from '../components/EventDetailPanel';
 
 class EventDetail extends React.Component {
-
-    componentDidMount() {
-        this.props.dispatch(applicationActions.fetchGetApplications());
-    }
-
     render() {
         const params = new URLSearchParams(this.props.location.search);
         const appId = params.get("application");
@@ -27,8 +22,8 @@ class EventDetail extends React.Component {
                 <Col md={3}>
                     <EventNavMenu
                         pathname="/event/detail"
-                        loading={this.props.applicationListLoadingState}
-                        applications={this.props.applications} />
+                        applications={this.props.applications}
+                        load={(callback) => this.props.loadApplications(callback)} />
                 </Col>
                 <Col md={9}>
                     {content}
@@ -40,7 +35,10 @@ class EventDetail extends React.Component {
 
 export default connect(state => {
     return {
-        applicationListLoadingState: state.ui.applicationListLoadingState,
         applications: state.application.list
+    };
+}, dispatch => {
+    return {
+        loadApplications: (callback) => dispatch(applicationActions.fetchGetApplications(callback))
     };
 })(EventDetail);

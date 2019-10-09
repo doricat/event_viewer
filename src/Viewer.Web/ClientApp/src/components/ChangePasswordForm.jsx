@@ -102,7 +102,7 @@ class ChangePasswordForm extends React.Component {
             }
 
             if (response.status === 500) {
-                this.props.dispatch(uiActions.setGlobalError(true, json.error.message));
+                this.props.setGlobalError(json.error.message);
                 return;
             }
 
@@ -122,7 +122,7 @@ class ChangePasswordForm extends React.Component {
 
             if (response.status === 401) {
                 authorizeService.signOut();
-                this.props.dispatch(push("/account/login"));
+                this.props.redirectToLogin();
             }
         }
     }
@@ -191,4 +191,9 @@ class ChangePasswordForm extends React.Component {
     }
 }
 
-export default connect()(ChangePasswordForm);
+export default connect(null, dispatch => {
+    return {
+        redirectToLogin: () => dispatch(push("/account/login")),
+        setGlobalError: (message) => dispatch(uiActions.setGlobalError(true, message))
+    }
+})(ChangePasswordForm);

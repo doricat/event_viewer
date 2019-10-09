@@ -28,28 +28,21 @@ export class ApplicationManagingPanel extends React.Component {
     }
 
     save() {
-        this.props.removeApp(this.props.detail.id, (state) => {
-            this.setShow(state);
-            this.props.history.push("/application");
-        });
-    }
-
-    componentDidMount() {
-        const { location, match, loadDetail } = this.props;
-        if (location.state === undefined && this.props.loading === false) {
-            loadDetail(match.params.id);
-        }
+        // this.props.removeApp(this.props.detail.id, (state) => {
+        //     this.setShow(state);
+        //     this.props.history.push("/application");
+        // });
     }
 
     render() {
-        const detail = this.props.detail;
+        const application = this.props.application;
 
-        if (detail) {
-            const { match } = this.props;
+        if (application) {
+
             const { isSubmitting } = this.state;
 
-            let style = {};
-            if (detail.enabled) {
+            const style = {};
+            if (application.enabled) {
                 style.bg = "light";
             } else {
                 style.border = "warning";
@@ -59,17 +52,17 @@ export class ApplicationManagingPanel extends React.Component {
                 <>
                     <Card {...style}>
                         <Card.Body>
-                            <Card.Title>{detail.name}</Card.Title>
-                            <Card.Subtitle className="mb-2 text-muted">{detail.appId}</Card.Subtitle>
-                            <Card.Text>{detail.description}</Card.Text>
+                            <Card.Title>{application.name}</Card.Title>
+                            <Card.Subtitle className="mb-2 text-muted">{application.appId}</Card.Subtitle>
+                            <Card.Text>{application.description}</Card.Text>
                         </Card.Body>
                         <ListGroup className="list-group-flush">
-                            <ListGroupItem>事件数：{detail.eventCount}</ListGroupItem>
-                            <ListGroupItem>订阅者：{detail.userList.length}</ListGroupItem>
+                            <ListGroupItem>事件数：{application.eventCount}</ListGroupItem>
+                            <ListGroupItem>关联的用户：{application.userList.length}</ListGroupItem>
                         </ListGroup>
                         <Card.Body>
-                            <Link to={{ pathname: `/application/${match.params.id}/edit`, state: { fromPanel: true } }} className="btn btn-primary card-link">编辑应用</Link>
-                            <Link to={{ pathname: `/application/${match.params.id}/subscribers`, state: { fromPanel: true } }} className="btn btn-primary card-link" onClick={() => this.props.loadUsers()}>成员管理</Link>
+                            <Link to={{ pathname: `/application/${application.id}/edit`, state: { fromPanel: true } }} className="btn btn-primary card-link">编辑应用</Link>
+                            <Link to={{ pathname: `/application/${application.id}/subscribers`, state: { fromPanel: true } }} className="btn btn-primary card-link">成员管理</Link>
                             <Button variant="warning" className="card-link" onClick={() => this.handleShow()}>删除应用</Button>
                         </Card.Body>
                     </Card>
@@ -88,10 +81,12 @@ export class ApplicationManagingPanel extends React.Component {
             );
         }
 
-        return LoadingAlert();
+        return null;
     }
 }
 
-const LoadingAlert = () => (<Alert variant="info"><i>加载中...</i></Alert>);
-
-export default loading(ApplicationManagingPanel, LoadingAlert);
+export default loading(ApplicationManagingPanel, () =>
+    (
+        <Alert variant="info"><i>加载中...</i></Alert>
+    )
+);

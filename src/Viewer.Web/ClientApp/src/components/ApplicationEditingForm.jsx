@@ -3,6 +3,8 @@ import { Form, Button, Alert } from 'react-bootstrap';
 import { required, regexExpression, maxLength, stringLength, validate } from '../services/validators';
 import { actions as applicationActions } from '../store/application';
 import { connect } from 'react-redux';
+import { loading } from './Loading';
+import { push } from 'connected-react-router';
 
 const descriptor = {
     appName: {
@@ -25,6 +27,10 @@ const descriptor = {
         validators: [
             (value) => maxLength(value, 250, descriptor.description.displayName)
         ]
+    },
+    enabled: {
+        displayName: "启用状态",
+        validators: []
     }
 };
 
@@ -32,21 +38,19 @@ class ApplicationEditingForm extends React.Component {
     constructor(props) {
         super(props);
 
-        const app = props.application || {
-            appName: "",
-            appId: "",
-            description: "",
-            enabled: ""
-        };
-
-        this.formHeader = props.application ? "编辑一个应用程序" : "创建一个新应用程序";
-
         this.state = {
             isSubmitting: false,
-            appName: app.appName,
-            appId: app.appId,
-            description: app.description,
-            enabled: app.enabled,
+            id: undefined,
+            formModel: {
+                appName: "",
+                appId: "",
+                description: "",
+                enabled: ""
+            },
+            messages: {
+                formHeader: "创建一个新应用程序",
+                button: "创建"
+            },
             apiResult: null,
             errors: {
                 appName: null,
@@ -54,21 +58,36 @@ class ApplicationEditingForm extends React.Component {
                 description: null,
             }
         };
+    }
 
-        // TODO 直接通过地址访问未加载数据
+    static getDerivedStateFromProps(props) {
+        if (props.application) {
+            const formModel = { ...props.application };
+            delete formModel.id;
+
+            return {
+                formModel,
+                id: props.application.id,
+                messages: {
+                    formHeader: "编辑一个应用程序",
+                    button: "保存"
+                }
+            };
+        }
+
+        return null;
     }
 
     handleChange(key, value) {
-        let obj = {};
-        obj[key] = value;
-        this.setState(obj);
+        const formModel = { ...this.state.formModel };
+        formModel[key] = value;
+        this.setState({ formModel });
     }
 
     handleSubmit(evt) {
         evt.preventDefault();
 
-        const { appName, appId, description } = this.state;
-        const model = { appName, appId, description };
+        const model = { ...this.state.formModel };
         const result = validate(model, descriptor);
 
         if (result.hasError) {
@@ -81,41 +100,42 @@ class ApplicationEditingForm extends React.Component {
         this.setState({ isSubmitting: true, apiResult: null });
 
         if (this.props.application) {
-
+            // todo update
         } else {
-            this.props.dispatch(applicationActions.fetchCreateApplication(
-                {
-                    ...model,
-                    enabled: this.state.enabled
-                },
-                error => {
-                    const { code, message, details } = error;
-                    let errors = { ...this.state.errors };
-                    for (let i = 0; i < details.length; i++) {
-                        const detail = details[i];
-                        if (detail.target && errors.hasOwnProperty(detail.target)) {
-                            errors[detail.target] = detail.message;
-                        }
-                    }
+            // todo create
 
-                    this.setState({
-                        apiResult: {
-                            code,
-                            message
-                        },
-                        errors: errors
-                    });
-                },
-                () => {
-                    this.props.cancel();
-                })
-            );
+            // this.props.dispatch(applicationActions.fetchCreateApplication(
+            //     {
+            //         ...model,
+            //         enabled: this.state.enabled
+            //     },
+            //     error => {
+            //         const { code, message, details } = error;
+            //         let errors = { ...this.state.errors };
+            //         for (let i = 0; i < details.length; i++) {
+            //             const detail = details[i];
+            //             if (detail.target && errors.hasOwnProperty(detail.target)) {
+            //                 errors[detail.target] = detail.message;
+            //             }
+            //         }
+
+            //         this.setState({
+            //             apiResult: {
+            //                 code,
+            //                 message
+            //             },
+            //             errors: errors
+            //         });
+            //     },
+            //     () => {
+            //         this.props.cancel();
+            //     })
+            // );
         }
     }
 
     handleValidate(key) {
-        const { appName, appId, description } = this.state;
-        const model = { appName, appId, description };
+        const model = { ...this.state.formModel };
         const result = validate(model, descriptor);
 
         let errors = { ...this.state.errors };
@@ -133,7 +153,7 @@ class ApplicationEditingForm extends React.Component {
 
         return (
             <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
-                <h4>{this.formHeader}</h4>
+                <h4>{this.state.messages.formHeader}</h4>
                 <hr />
                 {
                     this.state.apiResult !== null
@@ -148,7 +168,7 @@ class ApplicationEditingForm extends React.Component {
                         isInvalid={this.state.errors.appName}
                         disabled={isSubmitting}
                         onChange={(x) => this.handleChange("appName", x.target.value)}
-                        value={this.state.appName}
+                        value={this.state.formModel.appName}
                         onBlur={() => this.handleValidate("appName")} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.appName}</Form.Control.Feedback>
                 </Form.Group>
@@ -159,7 +179,7 @@ class ApplicationEditingForm extends React.Component {
                         isInvalid={this.state.errors.appId}
                         disabled={isSubmitting}
                         onChange={(x) => this.handleChange("appId", x.target.value)}
-                        value={this.state.appId}
+                        value={this.state.formModel.appId}
                         onBlur={() => this.handleValidate("appId")} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.appId}</Form.Control.Feedback>
                 </Form.Group>
@@ -170,7 +190,7 @@ class ApplicationEditingForm extends React.Component {
                         isInvalid={this.state.errors.description}
                         disabled={isSubmitting}
                         onChange={(x) => this.handleChange("description", x.target.value)}
-                        value={this.state.description}
+                        value={this.state.formModel.description}
                         onBlur={() => this.handleValidate("description")} />
                     <Form.Control.Feedback type="invalid">{this.state.errors.description}</Form.Control.Feedback>
                 </Form.Group>
@@ -179,14 +199,28 @@ class ApplicationEditingForm extends React.Component {
                     <Form.Check type="checkbox" label="启用状态"
                         disabled={isSubmitting}
                         onChange={(x) => this.handleChange("enabled", x.target.checked)}
-                        checked={this.state.enabled} />
+                        checked={this.state.formModel.enabled} />
                 </Form.Group>
 
-                <Button variant="primary" type="submit" disabled={isSubmitting}>创建</Button>
-                <Button variant="secondary" type="button" style={{ marginLeft: "1.25rem" }} disabled={isSubmitting} onClick={() => this.props.cancel()}>取消</Button>
+                <Button variant="primary" type="submit" disabled={isSubmitting}>{this.state.messages.button}</Button>
+                <Button variant="secondary" type="button" style={{ marginLeft: "1.25rem" }} disabled={isSubmitting} onClick={() => this.props.cancel(this.state.id)}>取消</Button>
             </Form>
         );
     }
 }
 
-export default connect()(ApplicationEditingForm);
+export default loading(connect(null, dispatch => {
+    return {
+        cancel: (id) => {
+            if (id) {
+                dispatch(push(`/application/${id}`));
+            } else {
+                dispatch(push("/application"));
+            }
+        }
+    }
+})(ApplicationEditingForm), () =>
+    (
+        <Alert variant="info"><i>加载中...</i></Alert>
+    )
+);

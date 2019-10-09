@@ -5,20 +5,11 @@ import { connect } from 'react-redux'
 import { actions as applicationActions } from '../store/application';
 
 class ApplicationManagingLayout extends React.Component {
-
-    loadDetail(id) {
-        this.props.dispatch(applicationActions.fetchLoadApplicationDetail(id, true));
-    }
-
-    componentDidMount() {
-        this.props.dispatch(applicationActions.fetchGetApplications());
-    }
-
     render() {
         return (
             <Row>
                 <Col md={3}>
-                    <ApplicationManagingMenu loading={this.props.applicationListLoadingState} applications={this.props.applications} loadDetail={id => this.loadDetail(id)} />
+                    <ApplicationManagingMenu applications={this.props.applications} load={(callback) => this.props.loadApplications(callback)} />
                 </Col>
                 <Col md={9}>
                     {this.props.children}
@@ -30,7 +21,10 @@ class ApplicationManagingLayout extends React.Component {
 
 export default connect(state => {
     return {
-        applicationListLoadingState: state.ui.applicationListLoadingState,
         applications: state.application.list
+    };
+}, dispatch => {
+    return {
+        loadApplications: (callback) => dispatch(applicationActions.fetchGetApplications(callback))
     };
 })(ApplicationManagingLayout);

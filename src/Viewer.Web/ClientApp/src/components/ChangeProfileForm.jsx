@@ -90,7 +90,7 @@ class ChangeProfileForm extends React.Component {
             }
 
             if (response.status === 500) {
-                this.props.dispatch(uiActions.setGlobalError(true, json.error.message));
+                this.props.setGlobalError(json.error.message);
                 return;
             }
 
@@ -103,7 +103,7 @@ class ChangeProfileForm extends React.Component {
 
             if (response.status === 401) {
                 authorizeService.signOut();
-                this.props.dispatch(push("/account/login"));
+                this.props.redirectToLogin();
             }
         }
     }
@@ -151,4 +151,9 @@ class ChangeProfileForm extends React.Component {
     }
 }
 
-export default connect()(ChangeProfileForm);
+export default connect(null, dispatch => {
+    return {
+        redirectToLogin: () => dispatch(push("/account/login")),
+        setGlobalError: (message) => dispatch(uiActions.setGlobalError(true, message))
+    }
+})(ChangeProfileForm);

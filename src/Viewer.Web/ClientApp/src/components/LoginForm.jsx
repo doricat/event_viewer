@@ -3,8 +3,6 @@ import { Form, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import authorizeService from '../services/AuthorizeService';
 import { required, validate } from '../services/validators';
-import { actions as userActions } from '../store/user';
-import { connect } from 'react-redux';
 
 const descriptor = {
     email: {
@@ -160,8 +158,4 @@ class LoginForm extends React.Component {
     }
 }
 
-export default connect(null, dispatch => {
-    return {
-        loadProfiles: () => dispatch(userActions.fetchLoadCurrentProfiles())
-    };
-})(LoginForm);
+export default LoginForm;

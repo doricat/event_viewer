@@ -5,16 +5,12 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 
 class Login extends React.Component {
-    navigate() {
-        this.props.push("/");
-    }
-
     render() {
         return (
             <Row>
                 <Col md={4}>
                     <section>
-                        <LoginForm navigate={() => this.navigate()} />
+                        <LoginForm navigate={() => this.props.push("/")} />
                     </section>
                 </Col>
 

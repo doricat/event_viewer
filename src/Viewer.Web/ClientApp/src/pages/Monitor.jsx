@@ -12,6 +12,8 @@ import { push } from 'connected-react-router';
 
 import "./Monitor.css";
 
+const levels = ["critical", "error", "warning", "information", "debug", "trace"];
+
 class Monitor extends React.Component {
     constructor(props) {
         super(props);
@@ -21,7 +23,7 @@ class Monitor extends React.Component {
             connectionId: undefined,
             apiError: null,
             apiResult: null,
-            levels: ["critical", "error", "warning", "information", "debug", "trace"]
+            levels: [...levels]
         };
 
         this.appId = undefined;
@@ -68,7 +70,7 @@ class Monitor extends React.Component {
                 }
 
                 if (response.status === 500) {
-                    this.props.dispatch(uiActions.setGlobalError(true, json.error.message));
+                    this.props.setGlobalError(json.error.message);
                     return;
                 }
 
@@ -76,7 +78,7 @@ class Monitor extends React.Component {
             } else {
                 if (response.status === 401) {
                     authorizeService.signOut();
-                    this.props.dispatch(push("/account/login"));
+                    this.props.redirectToLogin();
                 }
             }
 
@@ -86,18 +88,15 @@ class Monitor extends React.Component {
 
     connectedCallback(connectionId) {
         // 重置部分状态
-        this.setState({ isSubmitting: false, connectionId: connectionId, levels: ["critical", "error", "warning", "information", "debug", "trace"] })
+        this.setState({ isSubmitting: false, connectionId: connectionId, levels: [...levels] })
     }
 
     componentDidMount() {
-        const { dispatch } = this.props;
-        dispatch(uiActions.fixNavMenu());
-
-        dispatch(applicationActions.fetchGetApplications());
+        this.props.fixNavMenu();
     }
 
     componentWillUnmount() {
-        this.props.dispatch(uiActions.unfixNavMenu());
+        this.props.unfixNavMenu();
     }
 
     render() {
@@ -122,8 +121,8 @@ class Monitor extends React.Component {
                         <br />
                         <EventNavMenu
                             pathname="/monitor"
-                            loading={this.props.applicationListLoadingState}
-                            applications={this.props.applications} />
+                            applications={this.props.applications}
+                            load={(callback) => this.props.loadApplications(callback)} />
                     </div>
                 </nav>
                 <div className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
@@ -136,7 +135,14 @@ class Monitor extends React.Component {
 
 export default connect(state => {
     return {
-        applicationListLoadingState: state.ui.applicationListLoadingState,
         applications: state.application.list
+    };
+}, dispatch => {
+    return {
+        loadApplications: (callback) => dispatch(applicationActions.fetchGetApplications(callback)),
+        fixNavMenu: () => dispatch(uiActions.fixNavMenu()),
+        unfixNavMenu: () => dispatch(uiActions.unfixNavMenu()),
+        redirectToLogin: () => dispatch(push("/account/login")),
+        setGlobalError: (message) => dispatch(uiActions.setGlobalError(true, message))
     };
 })(Monitor);

@@ -40,15 +40,13 @@ export const actions = {
             payload: app
         };
     },
-    fetchGetApplications: () => async (dispatch) => {
-        dispatch(uiActions.setApplicationListLoadingState(true));
-
+    fetchGetApplications: (callback) => async (dispatch) => {
         const token = await authorizeService.getAccessToken();
         const response = await fetch("/api/applications", {
             headers: !token ? {} : { "Authorization": `Bearer ${token}` }
         });
 
-        dispatch(uiActions.setApplicationListLoadingState(false));
+        callback();
 
         if (response.status === 401) {
             authorizeService.signOut();
@@ -117,19 +115,13 @@ export const actions = {
             }
         }
     },
-    fetchLoadApplicationDetail: (id, showLoading) => async (dispatch) => {
-        if (showLoading === true) {
-            dispatch(uiActions.setApplicationDetailLoadingState(true));
-        }
-
+    fetchLoadApplicationDetail: (id, callback) => async (dispatch) => {
         const token = await authorizeService.getAccessToken();
         const response = await fetch(`/api/applications/${id}`, {
             headers: !token ? {} : { "Authorization": `Bearer ${token}` }
         });
 
-        if (showLoading === true) {
-            dispatch(uiActions.setApplicationDetailLoadingState(false));
-        }
+        callback();
 
         if (response.status === 401) {
             authorizeService.signOut();
