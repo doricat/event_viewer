@@ -22,6 +22,16 @@ export class AuthorizeService {
         return this._user;
     }
 
+    getRoles() {
+        const result = [];
+        if (this._user && this._user.role) {
+            result.push(this._user.role);
+            return result;
+        }
+
+        return result;
+    }
+
     getAccessToken() {
         return this._token;
     }

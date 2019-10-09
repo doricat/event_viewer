@@ -16,22 +16,24 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Unauthorized from './pages/Unauthorized';
 
-function PrivateRoute({ Component, ...rest }) {
+function PrivateRoute({ Component, role, ...rest }) {
     return (
         <Route
             {...rest}
-            render={(props) =>
-                authorizeService.isAuthenticated() ? (
-                    <Component {...props} />
-                ) : (
-                        <Redirect
-                            to={{
-                                pathname: "/account/login",
-                                state: { from: props.location }
-                            }}
-                        />
-                    )
-            }
+            render={(props) => {
+                if (authorizeService.isAuthenticated()) {
+                    if (role) {
+                        if (authorizeService.getRoles().findIndex(x => x.toLowerCase() === role.toLowerCase()) === -1) {
+                            return (<Redirect to={{ pathname: "/unauthorized", state: { from: props.location } }} />);
+                        }
+                    }
+
+                    return (<Component {...props} />);
+                }
+                else {
+                    return (<Redirect to={{ pathname: "/account/login", state: { from: props.location } }} />);
+                }
+            }}
         />
     );
 }
@@ -46,7 +48,7 @@ function App({ history }) {
                     <PrivateRoute path="/event/detail" Component={EventDetail} />
                     <PrivateRoute path="/event" Component={EventSummary} />
                     <PrivateRoute path="/monitor" Component={Monitor} />
-                    <PrivateRoute path="/application" Component={Application} />
+                    <PrivateRoute path="/application" Component={Application} role="admin" />
                     <PrivateRoute path="/account/profile" Component={Profile} />
                     <PrivateRoute path="/account/settings" Component={Settings} />
                     <Route path="/account/login" component={Login} />

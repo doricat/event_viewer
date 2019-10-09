@@ -1,7 +1,6 @@
 import React from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { required, regexExpression, maxLength, stringLength, validate } from '../services/validators';
-import { actions as applicationActions } from '../store/application';
 import { connect } from 'react-redux';
 import { loading } from './Loading';
 import { push } from 'connected-react-router';
@@ -60,10 +59,14 @@ class ApplicationEditingForm extends React.Component {
         };
     }
 
-    static getDerivedStateFromProps(props) {
-        if (props.application) {
-            const formModel = { ...props.application };
-            delete formModel.id;
+    static getDerivedStateFromProps(props, state) {
+        if (props.application && state.id === undefined) {
+            const formModel = {
+                appName: props.application.appName,
+                appId: props.application.appId,
+                description: props.application.description,
+                enabled: props.application.enabled
+            };
 
             return {
                 formModel,
@@ -82,6 +85,8 @@ class ApplicationEditingForm extends React.Component {
         const formModel = { ...this.state.formModel };
         formModel[key] = value;
         this.setState({ formModel });
+
+        console.log(formModel);
     }
 
     handleSubmit(evt) {
