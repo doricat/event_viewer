@@ -4,10 +4,13 @@ import NavMenu from './NavMenu';
 import { connect } from 'react-redux';
 import { actions as uiActions } from '../store/ui';
 import { actions as userActions } from '../store/user';
+import authorizeService from '../services/AuthorizeService';
 
 class Layout extends React.Component {
     componentDidMount() {
-        this.props.loadProfiles();
+        if (authorizeService.isAuthenticated()) {
+            this.props.loadProfiles();
+        }
     }
 
     render() {

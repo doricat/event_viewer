@@ -1,7 +1,8 @@
 import React from 'react';
 import './App.css';
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import { ConnectedRouter } from 'connected-react-router';
+import authorizeService from './services/AuthorizeService';
 import Layout from './components/Layout'
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
@@ -15,21 +16,41 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Unauthorized from './pages/Unauthorized';
 
+function PrivateRoute({ Component, ...rest }) {
+    return (
+        <Route
+            {...rest}
+            render={(props) =>
+                authorizeService.isAuthenticated() ? (
+                    <Component {...props} />
+                ) : (
+                        <Redirect
+                            to={{
+                                pathname: "/account/login",
+                                state: { from: props.location }
+                            }}
+                        />
+                    )
+            }
+        />
+    );
+}
+
 function App({ history }) {
     return (
         <ConnectedRouter history={history}>
             <Layout>
                 <Switch>
                     <Route exact path="/" component={Home} />
-                    <Route path="/event/summary" component={EventSummary} />
-                    <Route path="/event/detail" component={EventDetail} />
-                    <Route path="/event" component={EventSummary} />
-                    <Route path="/monitor" component={Monitor} />
-                    <Route path="/application" component={Application} />
+                    <PrivateRoute path="/event/summary" Component={EventSummary} />
+                    <PrivateRoute path="/event/detail" Component={EventDetail} />
+                    <PrivateRoute path="/event" Component={EventSummary} />
+                    <PrivateRoute path="/monitor" Component={Monitor} />
+                    <PrivateRoute path="/application" Component={Application} />
+                    <PrivateRoute path="/account/profile" Component={Profile} />
+                    <PrivateRoute path="/account/settings" Component={Settings} />
                     <Route path="/account/login" component={Login} />
                     <Route path="/account/register" component={Register} />
-                    <Route path="/account/profile" component={Profile} />
-                    <Route path="/account/settings" component={Settings} />
                     <Route path="/unauthorized" component={Unauthorized} />
                     <Route path="/404" component={NotFound} />
                     <Route component={NotFound} />
