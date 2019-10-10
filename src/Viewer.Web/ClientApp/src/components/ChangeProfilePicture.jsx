@@ -1,9 +1,10 @@
 import React from 'react';
-import { Image, DropdownButton, Dropdown, Alert } from 'react-bootstrap';
+import { Image, DropdownButton, Dropdown } from 'react-bootstrap';
 import authorizeService from '../services/AuthorizeService';
 import { actions as uiActions } from '../store/ui';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
+import ApiResultAlert from './ApiResultAlert';
 
 class ChangeProfilePicture extends React.Component {
     constructor(props) {
@@ -11,7 +12,8 @@ class ChangeProfilePicture extends React.Component {
 
         this.state = {
             isSubmitting: false,
-            apiResult: null
+            apiResult: null,
+            localSuccessMessage: undefined
         };
 
         this.fileInput = React.createRef();
@@ -22,7 +24,7 @@ class ChangeProfilePicture extends React.Component {
     }
 
     async uploadAvatar(evt) {
-        this.setState({ apiResult: null });
+        this.setState({ apiResult: null, localSuccessMessage: undefined });
         const file = evt.currentTarget.files[0];
 
         const formData = new FormData();
@@ -39,7 +41,7 @@ class ChangeProfilePicture extends React.Component {
     }
 
     async removeAvatar() {
-        this.setState({ apiResult: null });
+        this.setState({ apiResult: null, localSuccessMessage: undefined });
         const token = await authorizeService.getAccessToken();
         const response = await fetch("/api/accounts/current/profiles/avatar", {
             method: "DELETE",
@@ -55,11 +57,9 @@ class ChangeProfilePicture extends React.Component {
             const json = await response.json();
 
             if (response.status >= 400 && response.status < 500) {
-                const { code, message } = json.error;
-                let state = {
-                    apiResult: { code, message }
-                };
-                this.setState(state);
+                this.setState({
+                    apiResult: json
+                });
                 return;
             }
 
@@ -71,6 +71,9 @@ class ChangeProfilePicture extends React.Component {
             console.error(json);
         } else {
             if (response.ok === true) {
+                this.setState({
+                    localSuccessMessage: "操作成功！"
+                });
                 this.props.reloadProfiles();
                 return;
             }
@@ -85,13 +88,7 @@ class ChangeProfilePicture extends React.Component {
     render() {
         return (
             <>
-                {
-                    this.state.apiResult !== null
-                        ?
-                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
-                        :
-                        null
-                }
+                <ApiResultAlert message={this.state.localSuccessMessage} apiResult={this.state.apiResult} />
                 <div>
                     <Image src={this.props.avatar} rounded />
                     <DropdownButton title="编辑" variant="dark" size="sm" style={{ position: "relative", left: "10px", top: "-40px", display: this.props.avatar === "" ? "none" : "block" }}>

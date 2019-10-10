@@ -32,7 +32,7 @@ class Layout extends React.Component {
                 </Container>
 
                 <Modal show={this.props.globalErrorModal.show} size="lg" backdrop="static">
-                    <Alert variant="danger" dismissible style={{ marginBottom: "0px" }} onClose={() => this.props.dispatch(uiActions.closeGlobalErrorMessageBox(true))}>
+                    <Alert variant="danger" dismissible style={{ marginBottom: "0px" }} onClose={() => this.props.closeMessageBox()}>
                         <Alert.Heading>服务器引发了一个异常!</Alert.Heading>
                         <p>{this.props.globalErrorModal.message}</p>
                     </Alert>
@@ -49,6 +49,7 @@ export default connect((state) => {
     }
 }, dispatch => {
     return {
-        loadProfiles: () => dispatch(userActions.fetchLoadCurrentProfiles())
+        loadProfiles: () => dispatch(userActions.fetchLoadCurrentProfiles()),
+        closeMessageBox: () => dispatch(uiActions.closeGlobalErrorMessageBox(true))
     }
 })(Layout);

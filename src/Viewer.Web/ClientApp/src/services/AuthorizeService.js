@@ -68,7 +68,7 @@ export class AuthorizeService {
             //     code: "",
             //     message: ""
             // }
-            return { succeeded: false, ...json.error };
+            return { succeeded: false, apiResult: json };
         }
     }
 

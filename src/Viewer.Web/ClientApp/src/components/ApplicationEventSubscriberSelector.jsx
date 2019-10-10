@@ -6,6 +6,7 @@ import authorizeService from '../services/AuthorizeService';
 import { connect } from 'react-redux';
 import { actions as uiActions } from '../store/ui';
 import { push } from 'connected-react-router';
+import ApiResultAlert from './ApiResultAlert';
 
 export class ApplicationEventSubscriberSelector extends React.Component {
     constructor(props) {
@@ -15,7 +16,8 @@ export class ApplicationEventSubscriberSelector extends React.Component {
             isSubmitting: false,
             apiResult: null,
             users: [],
-            selectedList: undefined
+            selectedList: undefined,
+            localSuccessMessage: undefined
         };
     }
 
@@ -61,26 +63,33 @@ export class ApplicationEventSubscriberSelector extends React.Component {
             const json = await response.json();
 
             if (response.status >= 400 && response.status < 500) {
-                const { code, message } = json.error;
-                this.setState({ apiResult: { code, message } });
+                this.setState({ apiResult: json });
                 return;
             }
 
             if (response.status === 500) {
-                this.props.dispatch(uiActions.setGlobalError(true, json.error.message));
+                this.props.setGlobalError(json.error.message)
                 return;
             }
 
             console.error(json);
         } else {
             if (response.ok === true) {
-                this.props.dispatch(push(`/application/${this.props.application.id}`));
+                this.setState({ localSuccessMessage: "操作成功！" });
+                setTimeout(() => {
+                    this.props.cancel(this.props.application.id);
+                }, 1000);
                 return;
             }
 
             if (response.status === 401) {
                 authorizeService.signOut();
-                this.props.dispatch(push("/account/login"));
+                this.props.redirectToLogin()
+                return;
+            }
+
+            if (response.status === 403) {
+                this.props.redirectToUnauthorized();
                 return;
             }
         }
@@ -102,8 +111,7 @@ export class ApplicationEventSubscriberSelector extends React.Component {
             }
 
             if (response.status >= 400 && response.status < 500) {
-                const { code, message } = json.error;
-                this.setState({ apiResult: { code, message } });
+                this.setState({ apiResult: json });
                 return;
             }
 
@@ -136,13 +144,7 @@ export class ApplicationEventSubscriberSelector extends React.Component {
 
         return (
             <>
-                {
-                    this.state.apiResult !== null
-                        ?
-                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
-                        :
-                        null
-                }
+                <ApiResultAlert message={this.state.localSuccessMessage} apiResult={this.state.apiResult} />
                 <CardColumns style={{ columnCount: "5" }}>
                     {this.state.users.map(user => (
                         <SubscriberCard

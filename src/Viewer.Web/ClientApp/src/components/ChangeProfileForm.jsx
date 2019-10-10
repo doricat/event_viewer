@@ -1,10 +1,12 @@
 import React from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { required, maxLength, validate } from '../services/validators';
 import authorizeService from '../services/AuthorizeService';
 import { actions as uiActions } from '../store/ui';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
+import ApiResultAlert from './ApiResultAlert';
+import { copyApiErrorToLocal } from '../services/apiErrorHandler';
 
 const descriptor = {
     name: {
@@ -28,7 +30,8 @@ class ChangeProfileForm extends React.Component {
             apiResult: null,
             errors: {
                 name: null
-            }
+            },
+            localSuccessMessage: undefined
         };
     }
 
@@ -63,7 +66,7 @@ class ChangeProfileForm extends React.Component {
             return;
         }
 
-        this.setState({ isSubmitting: true, apiResult: null });
+        this.setState({ isSubmitting: true, apiResult: null, localSuccessMessage: undefined });
 
         const token = await authorizeService.getAccessToken();
         let headers = !token ? {} : { "Authorization": `Bearer ${token}` };
@@ -81,11 +84,9 @@ class ChangeProfileForm extends React.Component {
             const json = await response.json();
 
             if (response.status >= 400 && response.status < 500) {
-                const { code, message } = json.error;
-                let state = {
-                    apiResult: { code, message }
-                };
-                this.setState(state);
+                let errors = { ...this.state.errors };
+                const apiErrors = copyApiErrorToLocal(json, errors);
+                this.setState({ apiResult: json, errors: apiErrors });
                 return;
             }
 
@@ -97,6 +98,9 @@ class ChangeProfileForm extends React.Component {
             console.error(json);
         } else {
             if (response.ok === true) {
+                this.setState({
+                    localSuccessMessage: "操作成功！"
+                });
                 this.props.reloadProfiles();
                 return;
             }
@@ -125,13 +129,7 @@ class ChangeProfileForm extends React.Component {
     render() {
         return (
             <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
-                {
-                    this.state.apiResult !== null
-                        ?
-                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
-                        :
-                        null
-                }
+                <ApiResultAlert message={this.state.localSuccessMessage} apiResult={this.state.apiResult} />
                 <Form.Group>
                     <Form.Label>名称</Form.Label>
                     <Form.Control isInvalid={this.state.errors.name} type="text"

@@ -2,6 +2,11 @@ import React from 'react';
 import { Card, ListGroup, ListGroupItem, Modal, Button, Alert } from 'react-bootstrap';
 import { loading } from './Loading';
 import { Link } from 'react-router-dom';
+import authorizeService from '../services/AuthorizeService';
+import { push } from 'connected-react-router';
+import { actions as uiActions } from '../store/ui';
+import { connect } from 'react-redux';
+import ApiResultAlert from './ApiResultAlert';
 
 export class ApplicationManagingPanel extends React.Component {
     constructor(props) {
@@ -9,7 +14,9 @@ export class ApplicationManagingPanel extends React.Component {
 
         this.state = {
             isSubmitting: false,
-            show: false
+            show: false,
+            apiResult: null,
+            localSuccessMessage: undefined
         };
     }
 
@@ -27,11 +34,47 @@ export class ApplicationManagingPanel extends React.Component {
         this.setShow(true)
     }
 
-    save() {
-        // this.props.removeApp(this.props.detail.id, (state) => {
-        //     this.setShow(state);
-        //     this.props.history.push("/application");
-        // });
+    async save() {
+        const token = await authorizeService.getAccessToken();
+        const response = await fetch(`/api/applications/${this.props.application.id}`, {
+            method: "DELETE",
+            headers: !token ? {} : { "Authorization": `Bearer ${token}` }
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.startsWith("application/json")) {
+            const json = await response.json();
+
+            if (response.status >= 400 && response.status < 500) {
+                this.setState({ apiResult: json });
+                return;
+            }
+
+            if (response.status === 500) {
+                this.props.setGlobalError(json.error.message);
+                return;
+            }
+
+            console.error(json);
+        } else {
+            if (response.ok === true) {
+                this.setState({ localSuccessMessage: "操作成功！" });
+                setTimeout(() => {
+                    this.props.redirectToApplication()
+                }, 1000);
+                return;
+            }
+
+            if (response.status === 401) {
+                authorizeService.signOut();
+                this.props.redirectToLogin();
+            }
+
+            if (response.status === 403) {
+                authorizeService.signOut();
+                this.props.redirectToLogin();
+            }
+        }
     }
 
     render() {
@@ -71,6 +114,7 @@ export class ApplicationManagingPanel extends React.Component {
                         <Modal.Header closeButton>
                             <Modal.Title>提示</Modal.Title>
                         </Modal.Header>
+                        <ApiResultAlert message={this.state.localSuccessMessage} apiResult={this.state.apiResult} />
                         <Modal.Body>该操作将删除当前应用程序的所有事件!</Modal.Body>
                         <Modal.Footer>
                             <Button variant="secondary" disabled={isSubmitting} onClick={() => this.handleClose()}>放弃</Button>
@@ -85,7 +129,13 @@ export class ApplicationManagingPanel extends React.Component {
     }
 }
 
-export default loading(ApplicationManagingPanel, () =>
+export default loading(connect(null, dispatch => {
+    return {
+        redirectToApplication: () => dispatch(push("/application")), // TODO remove form list
+        redirectToLogin: () => dispatch(push("/account/login")),
+        setGlobalError: (message) => dispatch(uiActions.setGlobalError(true, message))
+    }
+})(ApplicationManagingPanel), () =>
     (
         <Alert variant="info"><i>加载中...</i></Alert>
     )

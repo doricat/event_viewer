@@ -1,6 +1,10 @@
 import React from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { required, regexExpression, maxLength, stringLength, compare, validate } from '../services/validators';
+import ApiResultAlert from './ApiResultAlert';
+import { copyApiErrorToLocal } from '../services/apiErrorHandler';
+import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
 
 const descriptor = {
     email: {
@@ -51,7 +55,8 @@ class RegisterForm extends React.Component {
                 email: null,
                 password: null,
                 confirmPassword: null
-            }
+            },
+            localSuccessMessage: undefined
         };
     }
 
@@ -108,26 +113,11 @@ class RegisterForm extends React.Component {
         if (response.ok === true) {
             this.props.navigate();
         } else {
-            const { code, message, details } = json.error;
-            let errors = { ...this.state.errors };
-            for (let i = 0; i < details.length; i++) {
-                const detail = details[i];
-                // {
-                //  "code": "",
-                //  "message": "",
-                //  "target": ""
-                // }
-                if (detail.target && errors.hasOwnProperty(detail.target)) {
-                    errors[detail.target] = detail.message;
-                }
-            }
-
+            const errors = { ...this.state.errors };
+            const apiErrors = copyApiErrorToLocal(json, errors);
             this.setState({
-                apiResult: {
-                    code,
-                    message
-                },
-                errors: errors
+                apiResult: json,
+                errors: apiErrors
             });
         }
     }
@@ -137,13 +127,7 @@ class RegisterForm extends React.Component {
             <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
                 <h4>创建一个新账户</h4>
                 <hr />
-                {
-                    this.state.apiResult !== null
-                        ?
-                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
-                        :
-                        null
-                }
+                <ApiResultAlert message={this.state.localSuccessMessage} apiResult={this.state.apiResult} />
                 <Form.Group>
                     <Form.Label>电子邮件</Form.Label>
                     <Form.Control isInvalid={this.state.errors.email} type="email"
@@ -194,4 +178,8 @@ class RegisterForm extends React.Component {
     }
 }
 
-export default RegisterForm;
+export default connect(null, dispatch => {
+    return {
+        navigate: () => dispatch(push("/"))
+    };
+})(RegisterForm);

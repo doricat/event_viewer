@@ -145,34 +145,6 @@ export const actions = {
                 dispatch(uiActions.setGlobalError(true, json.error.message));
             }
         }
-    },
-    fetchDeleteApplication: (id, callback) => async (dispatch) => {
-        const token = await authorizeService.getAccessToken();
-        const response = await fetch(`/api/applications/${id}`, {
-            method: "DELETE",
-            headers: !token ? {} : { "Authorization": `Bearer ${token}` }
-        });
-
-        if (response.status === 401) {
-            authorizeService.signOut();
-            dispatch(push("/account/login"));
-            return;
-        }
-
-        if (response.status === 403) {
-            dispatch(push("/unauthorized"));
-            return;
-        }
-
-        if (response.status === 500) {
-            const json = await response.json();
-            dispatch(uiActions.setGlobalError(true, json.error.message));
-        }
-
-        if (response.ok === true) {
-            dispatch(actions.fetchGetApplications());
-            callback();
-        }
     }
 };
 

@@ -13,7 +13,7 @@ namespace Viewer.Web.Controllers.Application
         [Required(ErrorMessage = "{0}不能为空")]
         [StringLength(30, MinimumLength = 6, ErrorMessage = "{0}的长度必须在{2}和{1}之间")]
         [RegularExpression(@"^[a-zA-Z\d_]+$", ErrorMessage = "{0}只能包含字母数字和下划线")]
-        public string Id { get; set; }
+        public string AppId { get; set; }
 
         [Display(Name = "描述")]
         [StringLength(250, ErrorMessage = "{0}的长度必须小于{1}")]

@@ -37,6 +37,8 @@ namespace Viewer.Web.Data
 
                 builder.HasKey(x => x.Id);
                 builder.HasIndex(x => x.ApplicationId);
+                builder.HasIndex(x => x.Name).IsUnique();
+                builder.HasIndex(x => x.ApplicationId).IsUnique();
 
                 builder.Property(x => x.Id).IsRequired().ValueGeneratedNever();
                 builder.Property(x => x.ApplicationId).HasMaxLength(50).IsRequired();

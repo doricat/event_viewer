@@ -1,10 +1,12 @@
 import React from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { required, regexExpression, stringLength, compare, validate } from '../services/validators';
 import authorizeService from '../services/AuthorizeService';
 import { actions as uiActions } from '../store/ui';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
+import ApiResultAlert from './ApiResultAlert';
+import { copyApiErrorToLocal } from '../services/apiErrorHandler';
 
 const descriptor = {
     currentPassword: {
@@ -31,23 +33,26 @@ const descriptor = {
     }
 };
 
+const formModelInitState = {
+    currentPassword: "",
+    password: "",
+    confirmPassword: ""
+};
+
 class ChangePasswordForm extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
             isSubmitting: false,
-            formModel: {
-                currentPassword: "",
-                password: "",
-                confirmPassword: ""
-            },
+            formModel: { ...formModelInitState },
             apiResult: null,
             errors: {
                 currentPassword: null,
                 password: null,
                 confirmPassword: null
-            }
+            },
+            localSuccessMessage: undefined
         };
     }
 
@@ -70,7 +75,7 @@ class ChangePasswordForm extends React.Component {
             return;
         }
 
-        this.setState({ isSubmitting: true, apiResult: null });
+        this.setState({ isSubmitting: true, apiResult: null, localSuccessMessage: undefined });
 
         const token = await authorizeService.getAccessToken();
         let headers = !token ? {} : { "Authorization": `Bearer ${token}` };
@@ -88,16 +93,13 @@ class ChangePasswordForm extends React.Component {
             const json = await response.json();
 
             if (response.status >= 400 && response.status < 500) {
-                const { code, message } = json.error;
-                const state = {
-                    apiResult: { code, message },
-                    formModel: {
-                        currentPassword: "",
-                        password: "",
-                        confirmPassword: ""
-                    }
-                };
-                this.setState(state);
+                let errors = { ...this.state.errors };
+                const apiErrors = copyApiErrorToLocal(json, errors);
+                this.setState({
+                    apiResult: json,
+                    formModel: { ...formModelInitState },
+                    errors: apiErrors
+                });
                 return;
             }
 
@@ -109,14 +111,10 @@ class ChangePasswordForm extends React.Component {
             console.error(json);
         } else {
             if (response.ok === true) {
-                const state = {
-                    formModel: {
-                        currentPassword: "",
-                        password: "",
-                        confirmPassword: ""
-                    }
-                };
-                this.setState(state);
+                this.setState({
+                    formModel: { ...formModelInitState },
+                    localSuccessMessage: "操作成功！"
+                });
                 return;
             }
 
@@ -144,14 +142,7 @@ class ChangePasswordForm extends React.Component {
     render() {
         return (
             <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
-                {
-                    this.state.apiResult !== null
-                        ?
-                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
-                        :
-                        null
-                }
-                {/* todo 增加本地成功提示 */}
+                <ApiResultAlert message={this.state.localSuccessMessage} apiResult={this.state.apiResult} />
                 <Form.Group>
                     <Form.Label>当前密码</Form.Label>
                     <Form.Control isInvalid={this.state.errors.currentPassword} type="password"

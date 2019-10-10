@@ -1,8 +1,12 @@
 import React from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import authorizeService from '../services/AuthorizeService';
 import { required, validate } from '../services/validators';
+import ApiResultAlert from './ApiResultAlert';
+import { actions as userActions } from '../store/user';
+import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
 
 const descriptor = {
     email: {
@@ -74,12 +78,8 @@ class LoginForm extends React.Component {
                 this.props.loadProfiles();
                 this.props.navigate();
             } else {
-                const { code, message } = result;
                 this.setState({
-                    apiResult: {
-                        code,
-                        message
-                    },
+                    apiResult: result.apiResult,
                     formModel: {
                         ...this.state.formModel,
                         password: ""
@@ -108,13 +108,7 @@ class LoginForm extends React.Component {
             <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
                 <h4>使用本地账户登录</h4>
                 <hr />
-                {
-                    this.state.apiResult !== null
-                        ?
-                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
-                        :
-                        null
-                }
+                <ApiResultAlert apiResult={this.state.apiResult} />
                 <Form.Group>
                     <Form.Label>电子邮件</Form.Label>
                     <Form.Control isInvalid={this.state.invalid.email} type="email"
@@ -158,4 +152,9 @@ class LoginForm extends React.Component {
     }
 }
 
-export default LoginForm;
+export default connect(null, dispatch => {
+    return {
+        loadProfiles: () => dispatch(userActions.fetchLoadCurrentProfiles()),
+        navigate: () => dispatch(push("/"))
+    };
+})(LoginForm);

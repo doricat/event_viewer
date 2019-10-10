@@ -4,13 +4,18 @@ import { required, regexExpression, maxLength, stringLength, validate } from '..
 import { connect } from 'react-redux';
 import { loading } from './Loading';
 import { push } from 'connected-react-router';
+import { actions as uiActions } from '../store/ui';
+import { actions as applicationActions } from '../store/application';
+import authorizeService from '../services/AuthorizeService';
+import ApiResultAlert from './ApiResultAlert';
+import { copyApiErrorToLocal } from '../services/apiErrorHandler';
 
 const descriptor = {
-    appName: {
+    name: {
         displayName: "应用程序名称",
         validators: [
-            (value) => required(value, descriptor.appName.displayName),
-            (value) => maxLength(value, 20, descriptor.appName.displayName)
+            (value) => required(value, descriptor.name.displayName),
+            (value) => maxLength(value, 20, descriptor.name.displayName)
         ]
     },
     appId: {
@@ -41,10 +46,10 @@ class ApplicationEditingForm extends React.Component {
             isSubmitting: false,
             id: undefined,
             formModel: {
-                appName: "",
+                name: "",
                 appId: "",
                 description: "",
-                enabled: ""
+                enabled: true
             },
             messages: {
                 formHeader: "创建一个新应用程序",
@@ -52,17 +57,18 @@ class ApplicationEditingForm extends React.Component {
             },
             apiResult: null,
             errors: {
-                appName: null,
+                name: null,
                 appId: null,
                 description: null,
-            }
+            },
+            localSuccessMessage: undefined
         };
     }
 
     static getDerivedStateFromProps(props, state) {
         if (props.application && state.id === undefined) {
             const formModel = {
-                appName: props.application.appName,
+                name: props.application.name,
                 appId: props.application.appId,
                 description: props.application.description,
                 enabled: props.application.enabled
@@ -85,11 +91,9 @@ class ApplicationEditingForm extends React.Component {
         const formModel = { ...this.state.formModel };
         formModel[key] = value;
         this.setState({ formModel });
-
-        console.log(formModel);
     }
 
-    handleSubmit(evt) {
+    async handleSubmit(evt) {
         evt.preventDefault();
 
         const model = { ...this.state.formModel };
@@ -104,38 +108,73 @@ class ApplicationEditingForm extends React.Component {
 
         this.setState({ isSubmitting: true, apiResult: null });
 
+        const token = await authorizeService.getAccessToken();
+        let headers = !token ? {} : { "Authorization": `Bearer ${token}` };
+        headers["Content-Type"] = "application/json";
+        let response;
+
         if (this.props.application) {
-            // todo update
+            response = await fetch(`/api/applications/${this.state.id}`,
+                {
+                    method: "PUT",
+                    headers: headers,
+                    body: JSON.stringify(model)
+                });
         } else {
-            // todo create
+            response = await fetch("/api/applications",
+                {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify(model)
+                });
+        }
 
-            // this.props.dispatch(applicationActions.fetchCreateApplication(
-            //     {
-            //         ...model,
-            //         enabled: this.state.enabled
-            //     },
-            //     error => {
-            //         const { code, message, details } = error;
-            //         let errors = { ...this.state.errors };
-            //         for (let i = 0; i < details.length; i++) {
-            //             const detail = details[i];
-            //             if (detail.target && errors.hasOwnProperty(detail.target)) {
-            //                 errors[detail.target] = detail.message;
-            //             }
-            //         }
+        this.setState({ isSubmitting: false });
 
-            //         this.setState({
-            //             apiResult: {
-            //                 code,
-            //                 message
-            //             },
-            //             errors: errors
-            //         });
-            //     },
-            //     () => {
-            //         this.props.cancel();
-            //     })
-            // );
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.startsWith("application/json")) {
+            const json = await response.json();
+
+            if (response.ok === true) {
+                this.setState({ localSuccessMessage: "操作成功！" });
+                this.props.appendNewAppToList({ ...model, id: json.value.id })
+                setTimeout(() => {
+                    this.props.cancel();
+                }, 1000);
+                return;
+            }
+
+            if (response.status >= 400 && response.status < 500) {
+                let errors = { ...this.state.errors };
+                const apiErrors = copyApiErrorToLocal(json, errors);
+                this.setState({ apiResult: json, errors: apiErrors });
+                return;
+            }
+
+            if (response.status === 500) {
+                this.props.setGlobalError(json.error.message);
+                return;
+            }
+
+            console.error(json);
+        } else {
+            if (response.ok === true) {
+                this.setState({ localSuccessMessage: "操作成功！" });
+                setTimeout(() => {
+                    this.props.cancel();
+                }, 1000);
+                return;
+            }
+
+            if (response.status === 401) {
+                authorizeService.signOut();
+                this.props.redirectToLogin();
+            }
+
+            if (response.status === 403) {
+                authorizeService.signOut();
+                this.props.redirectToLogin();
+            }
         }
     }
 
@@ -160,22 +199,16 @@ class ApplicationEditingForm extends React.Component {
             <Form noValidate className="needs-validation" onSubmit={(x) => this.handleSubmit(x)}>
                 <h4>{this.state.messages.formHeader}</h4>
                 <hr />
-                {
-                    this.state.apiResult !== null
-                        ?
-                        <Alert variant="warning">{this.state.apiResult.message}</Alert>
-                        :
-                        null
-                }
+                <ApiResultAlert message={this.state.localSuccessMessage} apiResult={this.state.apiResult} />
                 <Form.Group>
                     <Form.Label>应用程序名称</Form.Label>
                     <Form.Control type="text"
-                        isInvalid={this.state.errors.appName}
+                        isInvalid={this.state.errors.name}
                         disabled={isSubmitting}
-                        onChange={(x) => this.handleChange("appName", x.target.value)}
-                        value={this.state.formModel.appName}
-                        onBlur={() => this.handleValidate("appName")} />
-                    <Form.Control.Feedback type="invalid">{this.state.errors.appName}</Form.Control.Feedback>
+                        onChange={(x) => this.handleChange("name", x.target.value)}
+                        value={this.state.formModel.name}
+                        onBlur={() => this.handleValidate("name")} />
+                    <Form.Control.Feedback type="invalid">{this.state.errors.name}</Form.Control.Feedback>
                 </Form.Group>
 
                 <Form.Group>
@@ -222,7 +255,10 @@ export default loading(connect(null, dispatch => {
             } else {
                 dispatch(push("/application"));
             }
-        }
+        },
+        redirectToLogin: () => dispatch(push("/account/login")),
+        setGlobalError: (message) => dispatch(uiActions.setGlobalError(true, message)),
+        appendNewAppToList: (app) => dispatch(applicationActions.appendApplicationToList(app))
     }
 })(ApplicationEditingForm), () =>
     (

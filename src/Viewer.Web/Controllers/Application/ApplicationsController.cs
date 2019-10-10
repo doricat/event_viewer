@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Viewer.Web.ApiFilter;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Application;
@@ -24,12 +26,13 @@ namespace Viewer.Web.Controllers
         public ApplicationsController(ILogger<ApplicationsController> logger,
             ApplicationManager applicationManager,
             IdentityGenerator identityGenerator,
-            EventManager eventManager)
+            EventManager eventManager, IOptionsMonitor<PrimarySettings> primarySettings)
         {
             Logger = logger;
             ApplicationManager = applicationManager;
             IdentityGenerator = identityGenerator;
             EventManager = eventManager;
+            PrimarySettings = primarySettings.CurrentValue;
         }
 
         public ILogger<ApplicationsController> Logger { get; }
@@ -40,11 +43,14 @@ namespace Viewer.Web.Controllers
 
         public EventManager EventManager { get; }
 
+        public PrimarySettings PrimarySettings { get; }
+
         [HttpGet]
         public Task<IActionResult> Get()
         {
             var isAdmin = User.IsInRole("admin");
-            var query = isAdmin ? ApplicationManager.Applications : ApplicationManager.Applications.Where(x => x.Enabled);
+            var userId = long.Parse(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+            var query = isAdmin ? ApplicationManager.Applications : ApplicationManager.Applications.Where(x => x.Enabled && x.Users.Any(y => y.UserId == userId));
             var listTask = query.OrderBy(x => x.Id).ToListAsync(HttpContext.RequestAborted);
             var countTask = query.CountAsync(HttpContext.RequestAborted);
 
@@ -68,8 +74,9 @@ namespace Viewer.Web.Controllers
             var (app, count) = await ApplicationManager.FindDetailByIdAsync(id);
             if (app == null)
             {
-                Logger.LogWarning($"找不到指定的应用程序 {id}");
-                return NotFound();
+                var msg = $"找不到指定的应用程序 {id}";
+                Logger.LogWarning(msg);
+                return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, msg)));
             }
 
             var result = new ApplicationDetailGetOutputModel
@@ -155,11 +162,16 @@ namespace Viewer.Web.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Post([FromBody] ApplicationPostModel model)
         {
+            if (await ApplicationManager.Applications.AnyAsync(x => x.Name == model.Name || x.ApplicationId == model.AppId))
+            {
+                return BadRequest(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "存在重复的名称或应用程序Id。")));
+            }
+
             var app = new Data.Entities.Application
             {
                 Id = await IdentityGenerator.GenerateAsync(),
                 Name = model.Name,
-                ApplicationId = model.Id,
+                ApplicationId = model.AppId,
                 Description = model.Description,
                 Enabled = model.Enabled
             };
@@ -179,11 +191,27 @@ namespace Viewer.Web.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Put(string id, [FromBody] ApplicationPostModel model)
         {
+            var demoError = new Lazy<ApiErrorResult<ApiError>>(() => new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "演示需要，不可修改当前应用。")));
+            if (long.TryParse(id, out var lId))
+            {
+                if (PrimarySettings.CurrentApplicationId == lId)
+                {
+                    return BadRequest(demoError.Value);
+                }
+            }
+            else
+            {
+                if (PrimarySettings.CurrentApplicationCode == id)
+                {
+                    return BadRequest(demoError.Value);
+                }
+            }
+
             var app = await ApplicationManager.FindByIdAsync(id);
             if (app != null)
             {
                 app.Name = model.Name;
-                app.ApplicationId = model.Id;
+                app.ApplicationId = model.AppId;
                 app.Description = model.Description;
                 app.Enabled = model.Enabled;
 
@@ -197,8 +225,9 @@ namespace Viewer.Web.Controllers
                 throw new NotImplementedException();
             }
 
-            Logger.LogWarning($"找不到指定的应用程序 {id}");
-            return NoContent();
+            var msg = $"找不到指定的应用程序 {id}";
+            Logger.LogWarning(msg);
+            return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, msg)));
         }
 
         [HttpPatch("{id}")]
@@ -225,6 +254,22 @@ namespace Viewer.Web.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(string id)
         {
+            var demoError = new Lazy<ApiErrorResult<ApiError>>(() => new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "演示需要，不可删除当前应用。")));
+            if (long.TryParse(id, out var lId))
+            {
+                if (PrimarySettings.CurrentApplicationId == lId)
+                {
+                    return BadRequest(demoError.Value);
+                }
+            }
+            else
+            {
+                if (PrimarySettings.CurrentApplicationCode == id)
+                {
+                    return BadRequest(demoError.Value);
+                }
+            }
+
             var app = await ApplicationManager.FindByIdAsync(id);
             if (app != null)
             {
@@ -237,7 +282,7 @@ namespace Viewer.Web.Controllers
                 throw new NotImplementedException();
             }
 
-            return NoContent();
+            return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, $"找不到指定的应用程序 {id}")));
         }
     }
 }

@@ -87,6 +87,17 @@ namespace Viewer.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] AccountPostModel model)
         {
+            if (await UserManager.Users.AnyAsync(x => x.Email == model.Email))
+            {
+                return BadRequest(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "重复的用户信息。")
+                {
+                    Details = new List<ApiError>
+                    {
+                        new ApiError(ApiErrorCodes.BadArgument, "该邮箱已被注册。") {Target = "email"}
+                    }
+                }));
+            }
+
             var id = await IdentityGenerator.GenerateAsync();
             var result = await UserManager.CreateAsync(new User
             {
@@ -104,7 +115,7 @@ namespace Viewer.Web.Controllers
                     $"{Request.Scheme}://{Request.Host.Value}/api/accounts/{id}")));
             }
 
-            return BadRequest();
+            return BadRequest(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "意外的错误，请重试。")));
         }
 
         [Authorize]
