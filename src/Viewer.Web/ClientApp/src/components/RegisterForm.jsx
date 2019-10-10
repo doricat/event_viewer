@@ -180,6 +180,6 @@ class RegisterForm extends React.Component {
 
 export default connect(null, dispatch => {
     return {
-        navigate: () => dispatch(push("/"))
+        navigate: () => dispatch(push("/account/login"))
     };
 })(RegisterForm);

@@ -30,4 +30,6 @@
     <Folder Include="Views\Home\" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+
 </Project>

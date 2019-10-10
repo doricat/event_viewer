@@ -91,7 +91,7 @@ namespace Viewer.Web
             services.AddScoped<EntityErrorDescriber>();
             services.AddScoped<IApplicationStore, ApplicationStore>();
 
-            services.Configure<LocalFileStorageServiceOptions>(x => x.RootDirectory = "./upload");
+            services.Configure<LocalFileStorageServiceOptions>(x => Configuration.GetValue<string>("FileUploadRootDirectory"));
             services.AddScoped<IFileStore, FileStore>();
             services.AddScoped<LocalFileStorageService>();
             services.AddScoped<FileManager>();
@@ -101,11 +101,7 @@ namespace Viewer.Web
 
             services.AddMyHostedService();
 
-            services.Configure<PrimarySettings>(x =>
-            {
-                x.CurrentApplicationId = 281482820257685;
-                x.DefaultAvatar = "/api/images/281524743956263";
-            });
+            services.Configure<PrimarySettings>(x => Configuration.GetSection("PrimarySettings").Bind(x));
 
             services.AddSignalR();
         }
