@@ -18,6 +18,7 @@ using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Account;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
+using Viewer.Web.Extensions;
 using Viewer.Web.Utilities;
 
 namespace Viewer.Web.Controllers
@@ -85,6 +86,7 @@ namespace Viewer.Web.Controllers
         }
 
         [HttpPost]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Post([FromBody] AccountPostModel model)
         {
             if (await UserManager.Users.AnyAsync(x => x.Email == model.Email))
@@ -120,6 +122,7 @@ namespace Viewer.Web.Controllers
 
         [Authorize]
         [HttpPatch("current/profiles/avatar")]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Patch([FromForm] UserPatchAvatarInputModel model)
         {
             var user = await UserManager.FindByEmailAsync(User.Identity.Name);
@@ -176,6 +179,7 @@ namespace Viewer.Web.Controllers
 
         [Authorize]
         [HttpPatch("current/profiles/name")]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Patch([FromBody] UserNameInputModel model)
         {
             var user = await UserManager.FindByEmailAsync(User.Identity.Name);
@@ -187,6 +191,7 @@ namespace Viewer.Web.Controllers
 
         [Authorize]
         [HttpPatch("current/password")]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Patch([FromBody] AccountPasswordPatchModel model)
         {
             var user = await UserManager.FindByEmailAsync(User.Identity.Name);
@@ -206,6 +211,7 @@ namespace Viewer.Web.Controllers
 
         [Authorize]
         [HttpDelete("current/profiles/avatar")]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Delete()
         {
             var user = await UserManager.FindByEmailAsync(User.Identity.Name);

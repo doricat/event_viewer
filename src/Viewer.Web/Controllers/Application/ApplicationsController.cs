@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Viewer.Web.ApiFilter;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Application;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
+using Viewer.Web.Extensions;
 using Viewer.Web.Utilities;
 
 namespace Viewer.Web.Controllers
@@ -26,13 +26,12 @@ namespace Viewer.Web.Controllers
         public ApplicationsController(ILogger<ApplicationsController> logger,
             ApplicationManager applicationManager,
             IdentityGenerator identityGenerator,
-            EventManager eventManager, IOptionsMonitor<PrimarySettings> primarySettings)
+            EventManager eventManager)
         {
             Logger = logger;
             ApplicationManager = applicationManager;
             IdentityGenerator = identityGenerator;
             EventManager = eventManager;
-            PrimarySettings = primarySettings.CurrentValue;
         }
 
         public ILogger<ApplicationsController> Logger { get; }
@@ -42,8 +41,6 @@ namespace Viewer.Web.Controllers
         public IdentityGenerator IdentityGenerator { get; }
 
         public EventManager EventManager { get; }
-
-        public PrimarySettings PrimarySettings { get; }
 
         [HttpGet]
         public Task<IActionResult> Get()
@@ -160,6 +157,7 @@ namespace Viewer.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = "admin")]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Post([FromBody] ApplicationPostModel model)
         {
             if (await ApplicationManager.Applications.AnyAsync(x => x.Name == model.Name || x.ApplicationId == model.AppId))
@@ -189,24 +187,9 @@ namespace Viewer.Web.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "admin")]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Put(string id, [FromBody] ApplicationPostModel model)
         {
-            var demoError = new Lazy<ApiErrorResult<ApiError>>(() => new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "演示需要，不可修改当前应用。")));
-            if (long.TryParse(id, out var lId))
-            {
-                if (PrimarySettings.CurrentApplicationId == lId)
-                {
-                    return BadRequest(demoError.Value);
-                }
-            }
-            else
-            {
-                if (PrimarySettings.CurrentApplicationCode == id)
-                {
-                    return BadRequest(demoError.Value);
-                }
-            }
-
             var app = await ApplicationManager.FindByIdAsync(id);
             if (app != null)
             {
@@ -231,6 +214,7 @@ namespace Viewer.Web.Controllers
         }
 
         [HttpPatch("{id}")]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Patch(string id, [FromBody] ApplicationPatchSubscribersModel model)
         {
             var app = await ApplicationManager.FindByIdAsync(id);
@@ -252,24 +236,9 @@ namespace Viewer.Web.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "admin")]
+        [ServiceFilter(typeof(DemoFilterAttribute))]
         public async Task<IActionResult> Delete(string id)
         {
-            var demoError = new Lazy<ApiErrorResult<ApiError>>(() => new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "演示需要，不可删除当前应用。")));
-            if (long.TryParse(id, out var lId))
-            {
-                if (PrimarySettings.CurrentApplicationId == lId)
-                {
-                    return BadRequest(demoError.Value);
-                }
-            }
-            else
-            {
-                if (PrimarySettings.CurrentApplicationCode == id)
-                {
-                    return BadRequest(demoError.Value);
-                }
-            }
-
             var app = await ApplicationManager.FindByIdAsync(id);
             if (app != null)
             {

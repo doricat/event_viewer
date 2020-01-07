@@ -85,6 +85,8 @@ namespace Viewer.Web
                         .AllowCredentials();
                 }));
 
+            services.AddScoped<DemoFilterAttribute>();
+
             services.Configure<IdentityGeneratorOptions>(x => x.MachineTag = 1);
             services.AddSingleton<IdentityGenerator>();
             services.AddScoped<ApplicationManager>();
@@ -108,7 +110,7 @@ namespace Viewer.Web
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsEnvironment("demo"))
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
@@ -140,7 +142,7 @@ namespace Viewer.Web
             {
                 spa.Options.SourcePath = "ClientApp";
 
-                if (env.IsDevelopment())
+                if (env.IsDevelopment() || env.IsEnvironment("demo"))
                 {
                     // spa.UseReactDevelopmentServer(npmScript: "start");
                     spa.UseProxyToSpaDevelopmentServer("http://localhost:13001");
