@@ -13,13 +13,13 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Account;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
 using Viewer.Web.Utilities;
+using WebApi.Models;
 
 namespace Viewer.Web.Controllers
 {
@@ -69,7 +69,7 @@ namespace Viewer.Web.Controllers
                 Id = x.Id,
                 Email = x.Email,
                 Name = x.Name,
-                Avatar = x.Avatar
+                Avatar = x.AvatarId
             }).ToList()));
         }
 
@@ -81,7 +81,7 @@ namespace Viewer.Web.Controllers
             return Ok(new ApiResult<UserProfilesOutputModel>(new UserProfilesOutputModel
             {
                 Name = user.Name,
-                Avatar = user.Avatar
+                Avatar = user.AvatarId
             }));
         }
 
@@ -107,7 +107,7 @@ namespace Viewer.Web.Controllers
                 Email = model.Email,
                 UserName = model.Email,
                 Name = model.Name,
-                Avatar = PrimarySettings.DefaultAvatar
+                AvatarId = PrimarySettings.DefaultAvatar
             }, model.Password);
 
             if (result.Succeeded)
@@ -215,7 +215,7 @@ namespace Viewer.Web.Controllers
         public async Task<IActionResult> Delete()
         {
             var user = await UserManager.FindByEmailAsync(User.Identity.Name);
-            user.Avatar = PrimarySettings.DefaultAvatar;
+            user.AvatarId = PrimarySettings.DefaultAvatar;
             var result = await UserManager.UpdateAsync(user);
             if (result.Succeeded)
             {

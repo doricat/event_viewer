@@ -6,13 +6,13 @@ namespace Viewer.Web.Data
 {
     public class EventStore : IEventStore, IQueryableEventStore
     {
-        public EventStore(ApplicationDbContext context, EntityErrorDescriber errorDescriber)
+        public EventStore(MyDbContext context, EntityErrorDescriber errorDescriber)
         {
             Context = context;
             ErrorDescriber = errorDescriber;
         }
 
-        public ApplicationDbContext Context { get; }
+        public MyDbContext Context { get; }
 
         protected DbSet<Event> Events => Context.Events;
 

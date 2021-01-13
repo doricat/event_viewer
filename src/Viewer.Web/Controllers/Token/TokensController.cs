@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Token;
 using Viewer.Web.Data.Entities;
+using WebApi.Models;
 
 namespace Viewer.Web.Controllers
 {

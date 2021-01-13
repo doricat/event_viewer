@@ -8,13 +8,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Viewer.Web.ApiFilter;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Controllers.Application;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
 using Viewer.Web.Utilities;
+using WebApi.Filter;
+using WebApi.Models;
 
 namespace Viewer.Web.Controllers
 {
