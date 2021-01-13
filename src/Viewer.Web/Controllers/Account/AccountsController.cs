@@ -69,7 +69,7 @@ namespace Viewer.Web.Controllers
                 Id = x.Id,
                 Email = x.Email,
                 Name = x.Name,
-                Avatar = x.AvatarId
+                Avatar = x.AvatarId.ToString()
             }).ToList()));
         }
 
@@ -81,7 +81,7 @@ namespace Viewer.Web.Controllers
             return Ok(new ApiResult<UserProfilesOutputModel>(new UserProfilesOutputModel
             {
                 Name = user.Name,
-                Avatar = user.AvatarId
+                Avatar = user.AvatarId.ToString()
             }));
         }
 

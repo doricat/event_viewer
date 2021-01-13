@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Viewer.Web.Extensions.Logging;
 
@@ -10,11 +11,18 @@ namespace Viewer.Web
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            CreateHostBuilder(args).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((context, builder) =>
+                {
+                    if (context.HostingEnvironment.IsDemo())
+                    {
+                        builder.AddUserSecrets(Assembly.GetExecutingAssembly());
+                    }
+                })
                 .ConfigureLogging((context, builder) =>
                 {
                     if (context.HostingEnvironment.IsDevelopment())
@@ -24,6 +32,6 @@ namespace Viewer.Web
 
                     builder.AddFakeLogger();
                 })
-                .UseStartup(typeof(Startup).GetTypeInfo().Assembly.FullName);
+                .ConfigureWebHostDefaults(builder => { builder.UseStartup<Startup>(); });
     }
 }

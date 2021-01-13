@@ -1,8 +1,8 @@
 ﻿namespace Viewer.Web
 {
-    public class PrimarySettings
+    public class ApplicationSettings
     {
-        public string DefaultAvatar { get; set; }
+        public long DefaultAvatar { get; set; }
 
         public long CurrentApplicationId { get; set; }
 
