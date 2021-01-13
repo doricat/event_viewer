@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Logging;
+using Viewer.Web.Extensions.Logging;
 
 namespace Viewer.Web.Services
 {

@@ -1,9 +1,11 @@
 ﻿using System;
 
-namespace Logging
+namespace Viewer.Web.Extensions.Logging
 {
     public struct LogMessage
     {
+        public long? ApplicationId { get; set; }
+
         public string Category { get; set; }
 
         public string Level { get; set; }

@@ -1,36 +1,33 @@
-﻿using System.Data.SqlClient;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Configuration;
+using Npgsql;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 
 namespace Viewer.Web.Services
 {
-    public class EventWriter
+    public class PostgreSqlEventWriter : IEventDbWriter
     {
         private readonly string _connectionString;
 
-        public EventWriter(IConfiguration configuration)
+        public PostgreSqlEventWriter(IConfiguration configuration)
         {
-            Configuration = configuration;
-            _connectionString = Configuration.GetConnectionString("DefaultConnection");
+            _connectionString = configuration.GetConnectionString("PostgreSqlConnection");
         }
-
-        public IConfiguration Configuration { get; }
 
         public async Task<EntityResult> WriteAsync(Event evt, CancellationToken cancellationToken)
         {
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new NpgsqlConnection(_connectionString))
             {
                 await conn.OpenAsync(cancellationToken);
                 try
                 {
-                    await conn.ExecuteAsync(@"insert into Events(Id, GlobalId, ApplicationId, Category, Level, EventId, EventType, Message, Exception, ProcessId, TimeStamp)
+                    await conn.ExecuteAsync(@"insert into events(id, global_id, application_id, category, level, event_id, event_type, message, exception, process_id, timestamp)
 values (@Id, @GlobalId, @ApplicationId, @Category, @Level, @EventId, @EventType, @Message, @Exception, @ProcessId, @TimeStamp)", evt);
                 }
-                catch (SqlException e)
+                catch (NpgsqlException e)
                 {
                     return EntityResult.Failed(new EntityError {Description = e.Message});
                 }
