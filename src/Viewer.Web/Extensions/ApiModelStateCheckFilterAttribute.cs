@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using Viewer.Web.ApiModels;
+using WebApi.Models;
 
 namespace Viewer.Web.Extensions
 {
@@ -22,7 +23,6 @@ namespace Viewer.Web.Extensions
                 };
                 if (!result.Details.Any())
                 {
-                    // TODO 检查具体的key 完善错误数据
                     result.Target = context.ActionDescriptor.Parameters.FirstOrDefault()?.Name ?? "model";
                 }
 

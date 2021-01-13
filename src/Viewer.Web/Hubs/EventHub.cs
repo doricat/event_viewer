@@ -34,7 +34,7 @@ namespace Viewer.Web.Hubs
             var id = Context.ConnectionId;
             MemoryCache.Set(id, new MonitorSettings
             {
-                AppId = appId,
+                ApplicationId = appId,
                 Levels = new HashSet<string>
                 {
                     "critical", "error", "warning", "information", "debug", "trace"

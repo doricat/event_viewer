@@ -6,7 +6,7 @@ namespace Viewer.Web.Controllers.Monitor
     {
         [Display(Name = "应用程序Id")]
         [Required]
-        public long AppId { get; set; }
+        public long ApplicationId { get; set; }
 
         [Display(Name = "事件级别")]
         [Required]
@@ -15,7 +15,7 @@ namespace Viewer.Web.Controllers.Monitor
 
         public override string ToString()
         {
-            return $"Application: {AppId}, Level: {Level}";
+            return $"Application: {ApplicationId}, Level: {Level}";
         }
     }
 }

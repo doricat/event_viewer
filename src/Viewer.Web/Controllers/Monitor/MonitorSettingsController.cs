@@ -11,33 +11,33 @@ namespace Viewer.Web.Controllers
     [Authorize]
     public class MonitorSettingsController : ControllerBase
     {
+        private readonly ILogger<MonitorSettingsController> _logger;
+        private readonly IMemoryCache _memoryCache;
+
         public MonitorSettingsController(ILogger<MonitorSettingsController> logger, IMemoryCache memoryCache)
         {
-            Logger = logger;
-            MemoryCache = memoryCache;
+            _logger = logger;
+            _memoryCache = memoryCache;
         }
 
-        public ILogger<MonitorSettingsController> Logger { get; }
-
-        public IMemoryCache MemoryCache { get; }
 
         [HttpPatch("{id}")]
         public IActionResult Patch(string id /*signalR connection id*/, [FromBody] MonitorSettingsPutModel model)
         {
-            Logger.LogDebug(model.ToString());
+            _logger.LogDebug(model.ToString());
 
-            if (MemoryCache.TryGetValue(id, out MonitorSettings settings))
+            if (_memoryCache.TryGetValue(id, out MonitorSettings settings))
             {
-                if (settings.AppId == 0)
+                if (settings.ApplicationId == 0)
                 {
-                    settings.AppId = model.AppId;
+                    settings.ApplicationId = model.ApplicationId;
                 }
 
-                MemoryCache.Remove(id);
+                _memoryCache.Remove(id);
             }
             else
             {
-                settings = new MonitorSettings {AppId = model.AppId};
+                settings = new MonitorSettings { ApplicationId = model.ApplicationId };
             }
 
             if (model.Level.StartsWith('-'))
@@ -56,7 +56,7 @@ namespace Viewer.Web.Controllers
                 }
             }
 
-            MemoryCache.Set(id, settings);
+            _memoryCache.Set(id, settings);
             return NoContent();
         }
     }

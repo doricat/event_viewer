@@ -158,7 +158,7 @@ namespace Viewer.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = "admin")]
-        [ServiceFilter(typeof(DemoFilterAttribute))]
+        [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Post([FromBody] ApplicationPostModel model)
         {
             if (await ApplicationManager.Applications.AnyAsync(x => x.Name == model.Name || x.ApplicationId == model.AppId))
@@ -188,7 +188,7 @@ namespace Viewer.Web.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "admin")]
-        [ServiceFilter(typeof(DemoFilterAttribute))]
+        [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Put(string id, [FromBody] ApplicationPostModel model)
         {
             var app = await ApplicationManager.FindByIdAsync(id);
@@ -215,7 +215,7 @@ namespace Viewer.Web.Controllers
         }
 
         [HttpPatch("{id}")]
-        [ServiceFilter(typeof(DemoFilterAttribute))]
+        [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Patch(string id, [FromBody] ApplicationPatchSubscribersModel model)
         {
             var app = await ApplicationManager.FindByIdAsync(id);
@@ -237,7 +237,7 @@ namespace Viewer.Web.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "admin")]
-        [ServiceFilter(typeof(DemoFilterAttribute))]
+        [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Delete(string id)
         {
             var app = await ApplicationManager.FindByIdAsync(id);
