@@ -18,7 +18,7 @@ namespace Viewer.Web.Extensions.Logging
 
         public int ProcessId { get; set; }
 
-        public object Exception { get; set; }
+        public Exception Exception { get; set; }
 
         public DateTime Timestamp { get; set; }
     }

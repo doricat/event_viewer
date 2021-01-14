@@ -10,15 +10,7 @@ namespace Viewer.Web.Services
             services.AddSingleton<IEventQueue, EventQueue>();
             services.AddHostedService<EventStoreBackgroundService>();
             services.AddHostedService<EventPushBackgroundService>();
-
-            if (databaseEnvironment.IsPostgreSQL())
-            {
-                services.AddSingleton<IEventDbWriter, PostgreSqlEventWriter>();
-            }
-            else if (databaseEnvironment.IsSQLite())
-            {
-                services.AddSingleton<IEventDbWriter, SqliteEventWriter>();
-            }
+            services.AddSingleton<IEventDbWriter, EventWriter>();
 
             return services;
         }

@@ -1,10 +1,8 @@
-﻿using System.Net;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Viewer.Web.ApiModels;
 using WebApi.Models;
 
@@ -25,13 +23,11 @@ namespace Viewer.Web.Extensions
         {
             context.ExceptionHandled = true;
             _logger.LogError(context.Exception, "捕获到全局异常。");
-            context.Result = new ContentResult
-            {
-                StatusCode = (int)HttpStatusCode.InternalServerError,
-                Content = JsonConvert.SerializeObject(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ServerError, "处理您的请求时发生错误，请稍后重试。")),
-                    new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }),
-                ContentType = "application/json"
-            };
+            context.Result =
+                new JsonResult(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ServerError, "处理您的请求时发生错误，请稍后重试。")))
+                {
+                    StatusCode = 500
+                };
 
             await base.OnExceptionAsync(context);
         }

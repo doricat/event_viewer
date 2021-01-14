@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Viewer.Web.Data.Entities;
+using Viewer.Web.Extensions;
 using Viewer.Web.Hubs;
 using Viewer.Web.Utilities;
 
@@ -61,7 +61,7 @@ namespace Viewer.Web.Services
                     EventId = item.EventId,
                     EventType = item.EventType,
                     Message = item.Message,
-                    Exception = JsonConvert.SerializeObject(item.Exception, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }),
+                    Exception = item.Exception.SerializeToJson(),
                     ProcessId = item.ProcessId,
                     TimeStamp = item.Timestamp
                 };
