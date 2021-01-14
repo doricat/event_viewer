@@ -63,7 +63,7 @@ namespace Viewer.Web
             services.AddSingleton<IdentityGenerator>();
             services.AddScoped<EntityErrorDescriber>();
 
-            services.Configure<IdentityGeneratorOptions>(x => x.MachineTag = 1);
+            services.Configure<IdentityGeneratorOptions>(x => x.InstanceTag = 1);
             services.Configure<LocalFileStorageServiceOptions>(x => x.RootDirectory = Configuration.GetValue<string>("FileUploadRootDirectory"));
             services.Configure<ApplicationSettings>(x => Configuration.GetSection("ApplicationSettings").Bind(x));
             services.Configure<ApplicationEnvironment>(environment => environment.DatabaseEnvironment = databaseEnvironment);

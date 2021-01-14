@@ -6,7 +6,7 @@ namespace Viewer.Web.Hubs
     {
         public long Id { get; set; }
 
-        public long AppId { get; set; }
+        public long ApplicationId { get; set; }
 
         public string Level { get; set; }
 

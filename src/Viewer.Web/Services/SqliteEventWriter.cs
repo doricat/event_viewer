@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
@@ -34,6 +35,11 @@ values (@Id, @GlobalId, @ApplicationId, @Category, @Level, @EventId, @EventType,
 
                 return EntityResult.Success;
             }
+        }
+
+        public Task<EntityResult> WriteAsync(IList<Event> events, CancellationToken cancellationToken)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

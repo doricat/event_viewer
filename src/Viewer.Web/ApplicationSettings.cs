@@ -7,5 +7,7 @@
         public long CurrentApplicationId { get; set; }
 
         public string CurrentApplicationCode { get; set; }
+
+        public int EventFlushPeriod { get; set; } = 5;
     }
 }

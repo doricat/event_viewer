@@ -8,13 +8,13 @@
 
   <ItemGroup>
     <Compile Remove="upload\**" />
+    <Compile Remove="Views\**" />
     <Content Remove="upload\**" />
+    <Content Remove="Views\**" />
     <EmbeddedResource Remove="upload\**" />
+    <EmbeddedResource Remove="Views\**" />
     <None Remove="upload\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Shared\LogMessage.cs" Link="Extensions\Logging\LogMessage.cs" />
+    <None Remove="Views\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,11 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="logs\" />
     <Folder Include="Migrations\" />
-    <Folder Include="Views\Shared\" />
-    <Folder Include="Views\Account\" />
-    <Folder Include="Views\Home\" />
   </ItemGroup>
 
   <ProjectExtensions>
