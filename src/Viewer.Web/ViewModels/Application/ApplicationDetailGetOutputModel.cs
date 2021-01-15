@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Viewer.Web.Controllers.Application
+namespace Viewer.Web.ViewModels.Application
 {
     public class ApplicationDetailGetOutputModel : ApplicationGetOutputModel
     {

@@ -14,10 +14,10 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using Viewer.Web.ApiModels;
-using Viewer.Web.Controllers.Account;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
+using Viewer.Web.ViewModels.Account;
 using WebApi.Models;
 
 namespace Viewer.Web.Controllers

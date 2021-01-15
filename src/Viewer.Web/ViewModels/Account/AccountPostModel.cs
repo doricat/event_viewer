@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Viewer.Web.Controllers.Account
+namespace Viewer.Web.ViewModels.Account
 {
     public class AccountPostModel
     {

@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Viewer.Web.ApiModels;
-using Viewer.Web.Controllers.Application;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
 using Viewer.Web.Utilities;
+using Viewer.Web.ViewModels.Application;
 using WebApi.Filter;
 using WebApi.Models;
 
@@ -59,7 +59,7 @@ namespace Viewer.Web.Controllers
                     listTask.Result.Select(x => new ApplicationGetOutputModel
                     {
                         Id = x.Id,
-                        AppId = x.ApplicationId,
+                        ApplicationId = x.ApplicationId,
                         Name = x.Name,
                         Enabled = x.Enabled,
                         Description = x.Description
@@ -80,7 +80,7 @@ namespace Viewer.Web.Controllers
             var result = new ApplicationDetailGetOutputModel
             {
                 Id = app.Id,
-                AppId = app.ApplicationId,
+                ApplicationId = app.ApplicationId,
                 Name = app.Name,
                 Enabled = app.Enabled,
                 Description = app.Description,
@@ -161,7 +161,7 @@ namespace Viewer.Web.Controllers
         [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Post([FromBody] ApplicationPostModel model)
         {
-            if (await ApplicationManager.Applications.AnyAsync(x => x.Name == model.Name || x.ApplicationId == model.AppId))
+            if (await ApplicationManager.Applications.AnyAsync(x => x.Name == model.Name || x.ApplicationId == model.ApplicationId))
             {
                 return BadRequest(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "存在重复的名称或应用程序Id。")));
             }
@@ -170,7 +170,7 @@ namespace Viewer.Web.Controllers
             {
                 Id = await IdentityGenerator.GenerateAsync(),
                 Name = model.Name,
-                ApplicationId = model.AppId,
+                ApplicationId = model.ApplicationId,
                 Description = model.Description,
                 Enabled = model.Enabled
             };
@@ -195,7 +195,7 @@ namespace Viewer.Web.Controllers
             if (app != null)
             {
                 app.Name = model.Name;
-                app.ApplicationId = model.AppId;
+                app.ApplicationId = model.ApplicationId;
                 app.Description = model.Description;
                 app.Enabled = model.Enabled;
 

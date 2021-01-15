@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace Viewer.Web.Controllers.Account
+namespace Viewer.Web.ViewModels.Account
 {
     public class UserPatchAvatarInputModel : IValidatableObject
     {

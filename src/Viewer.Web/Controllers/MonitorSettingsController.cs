@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Viewer.Web.Controllers.Monitor;
+using Viewer.Web.ViewModels.Monitor;
 
 namespace Viewer.Web.Controllers
 {

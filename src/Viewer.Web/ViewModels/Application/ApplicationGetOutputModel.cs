@@ -1,4 +1,4 @@
-﻿namespace Viewer.Web.Controllers.Application
+﻿namespace Viewer.Web.ViewModels.Application
 {
     public class ApplicationGetOutputModel
     {
@@ -6,7 +6,7 @@
 
         public string Name { get; set; }
 
-        public string AppId { get; set; }
+        public string ApplicationId { get; set; }
 
         public string Description { get; set; }
 

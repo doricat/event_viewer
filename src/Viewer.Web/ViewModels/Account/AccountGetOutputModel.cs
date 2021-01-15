@@ -1,6 +1,6 @@
 ﻿using Viewer.Web.Data.Entities;
 
-namespace Viewer.Web.Controllers.Account
+namespace Viewer.Web.ViewModels.Account
 {
     public class AccountGetOutputModel
     {

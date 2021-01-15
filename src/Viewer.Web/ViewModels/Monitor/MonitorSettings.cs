@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Viewer.Web.Controllers.Monitor
+namespace Viewer.Web.ViewModels.Monitor
 {
     public class MonitorSettings
     {

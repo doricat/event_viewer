@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Viewer.Web.Controllers.Monitor
+namespace Viewer.Web.ViewModels.Monitor
 {
     public class MonitorSettingsPutModel
     {
