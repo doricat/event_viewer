@@ -1,8 +1,11 @@
 ﻿using System.Reflection;
+using IdentityServer4.EntityFramework.Entities;
+using IdentityServer4.EntityFramework.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Viewer.Web.Data.Entities;
 
 namespace Viewer.Web.Data
@@ -12,7 +15,8 @@ namespace Viewer.Web.Data
         private readonly IConfiguration _configuration;
 
         public PostgreSqlDbContext(DbContextOptions<PostgreSqlDbContext> options,
-            IConfiguration configuration) : base(options)
+            IOptions<OperationalStoreOptions> operationalStoreOptions,
+            IConfiguration configuration) : base(options, operationalStoreOptions)
         {
             _configuration = configuration;
         }
@@ -96,9 +100,9 @@ namespace Viewer.Web.Data
 
                 builder.HasKey(x => x.Id).HasName("pk_events");
                 builder.HasIndex(x => x.GlobalId).HasName("ix_events_global_id");
-                builder.HasIndex(x => new {x.ApplicationId, x.Category}).HasName("ix_events_application_id_category");
-                builder.HasIndex(x => new {x.ApplicationId, x.Level}).HasName("ix_events_application_id_level");
-                builder.HasIndex(x => new {x.ApplicationId, x.Level, x.TimeStamp}).HasName("ix_events_application_id_level_timestamp");
+                builder.HasIndex(x => new { x.ApplicationId, x.Category }).HasName("ix_events_application_id_category");
+                builder.HasIndex(x => new { x.ApplicationId, x.Level }).HasName("ix_events_application_id_level");
+                builder.HasIndex(x => new { x.ApplicationId, x.Level, x.TimeStamp }).HasName("ix_events_application_id_level_timestamp");
                 builder.HasIndex(x => x.TimeStamp).HasName("ix_events_timestamp");
 
                 builder.Property(x => x.Id).HasColumnName("id").HasColumnType("bigint").IsRequired().ValueGeneratedNever();
@@ -124,7 +128,7 @@ namespace Viewer.Web.Data
             {
                 builder.ToTable("user_applications");
 
-                builder.HasKey(x => new {x.UserId, x.ApplicationId}).HasName("pk_user_applications");
+                builder.HasKey(x => new { x.UserId, x.ApplicationId }).HasName("pk_user_applications");
 
                 builder.Property(x => x.UserId).HasColumnName("user_id").HasColumnType("bigint").IsRequired();
                 builder.Property(x => x.ApplicationId).HasColumnName("application_id").HasColumnType("bigint").IsRequired();
@@ -152,6 +156,40 @@ namespace Viewer.Web.Data
                 builder.Property(x => x.Size).HasColumnName("size").HasColumnType("int").IsRequired();
                 builder.Property(x => x.RawName).HasColumnName("raw_name").HasColumnType("varchar(255)");
                 builder.Property(x => x.Stream).HasColumnName("stream").HasColumnType("bytea");
+            });
+
+            modelBuilder.Entity<DeviceFlowCodes>(builder =>
+            {
+                builder.ToTable("device_codes");
+
+                builder.HasKey(x => x.UserCode).HasName("pk_device_codes");
+                builder.HasIndex(x => x.DeviceCode).IsUnique().HasName("ix_device_codes_device_code");
+                builder.HasIndex(x => x.Expiration).HasName("ix_device_codes_expiration");
+
+                builder.Property(x => x.UserCode).HasColumnName("user_code").HasColumnType("varchar(200)").HasMaxLength(200).IsRequired();
+                builder.Property(x => x.DeviceCode).HasColumnName("device_code").HasColumnType("varchar(200)").HasMaxLength(200).IsRequired();
+                builder.Property(x => x.SubjectId).HasColumnName("subject_id").HasColumnType("varchar(200)").HasMaxLength(200);
+                builder.Property(x => x.ClientId).HasColumnName("client_id").HasColumnType("varchar(200)").HasMaxLength(200).IsRequired();
+                builder.Property(x => x.CreationTime).HasColumnName("creation_time").HasColumnType("timestamp").IsRequired();
+                builder.Property(x => x.Expiration).HasColumnName("expiration").HasColumnType("timestamp").IsRequired();
+                builder.Property(x => x.Data).HasColumnName("data").HasColumnType("text").HasMaxLength(50000).IsRequired();
+            });
+
+            modelBuilder.Entity<PersistedGrant>(builder =>
+            {
+                builder.ToTable("persisted_grants");
+
+                builder.HasKey(x => x.Key).HasName("pk_persisted_grants");
+                builder.HasIndex(x => x.Expiration).HasName("ix_persisted_grants_expiration");
+                builder.HasIndex(x => new { x.SubjectId, x.ClientId, x.Type }).HasName("ix_persisted_grants_subject_id_client_id_type");
+
+                builder.Property(x => x.Key).HasColumnName("key").HasColumnType("varchar(200)").HasMaxLength(200).IsRequired();
+                builder.Property(x => x.Type).HasColumnName("type").HasColumnType("varchar(50)").HasMaxLength(50).IsRequired();
+                builder.Property(x => x.SubjectId).HasColumnName("subject_id").HasColumnType("varchar(200)").HasMaxLength(200);
+                builder.Property(x => x.ClientId).HasColumnName("client_id").HasColumnType("varchar(200)").HasMaxLength(200).IsRequired();
+                builder.Property(x => x.CreationTime).HasColumnName("creation_time").HasColumnType("timestamp").IsRequired();
+                builder.Property(x => x.Expiration).HasColumnName("expiration").HasColumnType("timestamp");
+                builder.Property(x => x.Data).HasColumnName("data").HasColumnType("text").HasMaxLength(50000).IsRequired();
             });
 
             modelBuilder.Entity<IdentityRoleClaim<long>>(builder =>
@@ -196,7 +234,7 @@ namespace Viewer.Web.Data
             {
                 builder.ToTable("user_logins");
 
-                builder.HasKey(x => new {x.LoginProvider, x.ProviderKey}).HasName("pk_user_logins");
+                builder.HasKey(x => new { x.LoginProvider, x.ProviderKey }).HasName("pk_user_logins");
 
                 builder.Property(x => x.LoginProvider).HasColumnName("login_provider").HasColumnType("varchar(500)").HasMaxLength(500).IsRequired();
                 builder.Property(x => x.ProviderKey).HasColumnName("provider_key").HasColumnType("varchar(500)").HasMaxLength(500).IsRequired();
@@ -214,7 +252,7 @@ namespace Viewer.Web.Data
             {
                 builder.ToTable("user_roles");
 
-                builder.HasKey(x => new {x.UserId, x.RoleId}).HasName("pk_user_roles");
+                builder.HasKey(x => new { x.UserId, x.RoleId }).HasName("pk_user_roles");
 
                 builder.Property(x => x.UserId).HasColumnName("user_id").HasColumnType("bigint").IsRequired();
                 builder.Property(x => x.RoleId).HasColumnName("role_id").HasColumnType("bigint").IsRequired();
@@ -236,7 +274,7 @@ namespace Viewer.Web.Data
             {
                 builder.ToTable("user_tokens");
 
-                builder.HasKey(x => new {x.UserId, x.LoginProvider, x.Name}).HasName("pk_user_tokens");
+                builder.HasKey(x => new { x.UserId, x.LoginProvider, x.Name }).HasName("pk_user_tokens");
 
                 builder.Property(x => x.UserId).HasColumnName("user_id").HasColumnType("bigint").IsRequired();
                 builder.Property(x => x.LoginProvider).HasColumnName("login_provider").HasColumnType("varchar(500)").HasMaxLength(500).IsRequired();
@@ -266,7 +304,12 @@ namespace Viewer.Web.Data
             var optionsBuilder = new DbContextOptionsBuilder<PostgreSqlDbContext>();
             optionsBuilder.UseNpgsql(connectionString);
 
+            var operationalStoreValue = new OperationalStoreOptions();
+            // configuration.GetSection("OperationalStoreOptions").Bind(operationalStoreValue);
+            var operationalStoreOptions = Options.Create(operationalStoreValue);
+
             return new PostgreSqlDbContext(optionsBuilder.Options,
+                operationalStoreOptions,
                 configuration);
         }
     }

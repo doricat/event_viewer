@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,18 +11,22 @@ using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
 using Viewer.Web.Hubs;
+using Viewer.Web.Services;
 using Viewer.Web.Utilities;
 
 namespace Viewer.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostEnvironment hostEnvironment)
         {
             Configuration = configuration;
+            HostEnvironment = hostEnvironment;
         }
 
         public IConfiguration Configuration { get; }
+
+        public IHostEnvironment HostEnvironment { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -39,11 +44,13 @@ namespace Viewer.Web
             {
                 services.AddDbContext<MyDbContext, PostgreSqlDbContext>(ServiceLifetime.Scoped);
                 services.AddIdentity<User, Role>().AddEntityFrameworkStores<PostgreSqlDbContext>();
+                services.AddIdentityServer().AddApiAuthorization<User, PostgreSqlDbContext>().AddProfileService<ProfileService>();
             }
             else if (databaseEnvironment.IsSQLite())
             {
                 services.AddDbContext<MyDbContext, SqliteDbContext>(ServiceLifetime.Scoped);
                 services.AddIdentity<User, Role>().AddEntityFrameworkStores<SqliteDbContext>();
+                services.AddIdentityServer().AddApiAuthorization<User, SqliteDbContext>().AddProfileService<ProfileService>();
             }
 
             services.AddAuthentication().AddIdentityServerJwt().AddJwtBearer(options =>
@@ -67,6 +74,10 @@ namespace Viewer.Web
             services.Configure<LocalFileStorageServiceOptions>(x => x.RootDirectory = Configuration.GetValue<string>("FileUploadRootDirectory"));
             services.Configure<ApplicationSettings>(x => Configuration.GetSection("ApplicationSettings").Bind(x));
             services.Configure<ApplicationEnvironment>(environment => environment.DatabaseEnvironment = databaseEnvironment);
+
+            services.AddStores(databaseEnvironment).AddManagers();
+            services.AddMyHostedService(databaseEnvironment);
+            services.AddTransient<IEmailSender, FakeEmailSender>();
         }
 
         public void Configure(IApplicationBuilder app, IHostEnvironment env)
