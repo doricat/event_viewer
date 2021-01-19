@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
 using Viewer.Web.Hubs;
+using Viewer.Web.Infrastructure;
 using Viewer.Web.Utilities;
 
 namespace Viewer.Web.Services

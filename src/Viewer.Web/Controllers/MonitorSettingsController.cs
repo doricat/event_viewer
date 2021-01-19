@@ -20,7 +20,6 @@ namespace Viewer.Web.Controllers
             _memoryCache = memoryCache;
         }
 
-
         [HttpPatch("{id}")]
         public IActionResult Patch(string id /*signalR connection id*/, [FromBody] MonitorSettingsPutModel model)
         {

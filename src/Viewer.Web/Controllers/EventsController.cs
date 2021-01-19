@@ -8,7 +8,7 @@ namespace Viewer.Web.Controllers
     public class EventsController : ControllerBase
     {
         [HttpGet("{id}")]
-        public IActionResult Get(long id)
+        public IActionResult Get(string id)
         {
             throw new NotImplementedException();
         }

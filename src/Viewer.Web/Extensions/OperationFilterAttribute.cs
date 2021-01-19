@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Viewer.Web.ApiModels;
+using Viewer.Web.Infrastructure;
 using WebApi.Models;
 
 namespace Viewer.Web.Extensions

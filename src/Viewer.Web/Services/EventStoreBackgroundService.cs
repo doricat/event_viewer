@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Viewer.Web.Data.Entities;
+using Viewer.Web.Infrastructure;
 
 namespace Viewer.Web.Services
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -9,14 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Processing;
 using Viewer.Web.ApiModels;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
+using Viewer.Web.Infrastructure;
 using Viewer.Web.ViewModels.Account;
 using WebApi.Models;
 
@@ -68,54 +63,10 @@ namespace Viewer.Web.Controllers
         public async Task<IActionResult> Patch([FromRoute] string id, [FromForm] UserPatchAvatarInputModel model)
         {
             var user = await _userManager.FindByEmailAsync(User.Identity.Name);
-
-            using (var stream = new MemoryStream())
-            {
-                await model.File.CopyToAsync(stream);
-                using (var imageStream = new MemoryStream())
-                {
-                    // 将文件剪裁为180 * 180 px
-                    const int px = 180;
-                    stream.Seek(0, SeekOrigin.Begin);
-                    using (var image = Image.Load(stream))
-                    {
-                        if (image.Width < image.Height)
-                        {
-                            var times = (decimal)image.Height / image.Width;
-                            image.Mutate(x => x.Resize(px, (int)(px * times)));
-                        }
-                        else
-                        {
-                            var times = (decimal)image.Width / image.Height;
-                            image.Mutate(x => x.Resize((int)(px * times), px));
-                        }
-
-                        image.Mutate(x => x.Crop(new Rectangle(0, 0, px, px)));
-
-                        switch (model.File.ContentType.ToLower())
-                        {
-                            case "image/jpeg":
-                            case "image/jpg":
-                                image.Save(imageStream, new JpegEncoder());
-                                break;
-
-                            case "image/png":
-                                image.Save(imageStream, new PngEncoder());
-                                break;
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-
-                    var fileId = await _fileManager.CreateFileAsync(imageStream, model.File.ContentType, model.File.FileName);
-
-                    user.AvatarId = fileId;
-                    await _userManager.UpdateAsync(user);
-                }
-
-                return Ok(new ApiResult<string>($"/api/files/{user.AvatarId}"));
-            }
+            var fileId = await _fileManager.CreateFileAsync(await model.File.ResizeFile(180), model.File.ContentType, model.File.FileName);
+            user.AvatarId = fileId;
+            await _userManager.UpdateAsync(user);
+            return Ok(new ApiResult<string>($"/api/files/{user.AvatarId}"));
         }
 
         [Authorize]

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Viewer.Web
+namespace Viewer.Web.Infrastructure
 {
     public class MyDatabaseEnvironment
     {

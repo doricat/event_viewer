@@ -1,4 +1,4 @@
-﻿namespace Viewer.Web
+﻿namespace Viewer.Web.Infrastructure
 {
     public class ApplicationEnvironment
     {
