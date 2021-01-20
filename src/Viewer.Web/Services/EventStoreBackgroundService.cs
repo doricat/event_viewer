@@ -18,13 +18,12 @@ namespace Viewer.Web.Services
 
         public EventStoreBackgroundService(IEventStoreQueue storeQueue,
             IEventDbWriter eventWriter, 
-            Queue<Event> localQueue, 
             IOptions<ApplicationSettings> options)
         {
             _storeQueue = storeQueue;
             _eventWriter = eventWriter;
-            _localQueue = localQueue;
             _options = options;
+            _localQueue = new Queue<Event>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

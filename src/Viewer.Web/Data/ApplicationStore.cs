@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -133,24 +131,24 @@ namespace Viewer.Web.Data
             return EntityResult.Success;
         }
 
-        public Task<Tuple<Application, int>> FindDetailByIdAsync(string id)
+        public async Task<Tuple<Application, int>> FindDetailByIdAsync(string id)
         {
-            Task<Application> appTask;
-            Task<int> eventCountTask;
+            Application app;
+            int eventCount;
             if (long.TryParse(id, out var i))
             {
-                appTask = Context.Applications.Include(x => x.Users).FirstOrDefaultAsync(x => x.Id == i);
-                eventCountTask = Context.Events.Where(x => x.ApplicationId == i).CountAsync();
+                app = await Context.Applications.Include(x => x.Users).FirstOrDefaultAsync(x => x.Id == i);
+                eventCount = await Context.Events.Where(x => x.ApplicationId == i).CountAsync();
             }
             else
             {
-                appTask = Context.Applications.Include(x => x.Users).FirstOrDefaultAsync(x => x.ApplicationId == id);
-                eventCountTask = Context.Events.Where(x => x.Application.ApplicationId == id).CountAsync();
+                app = await Context.Applications.Include(x => x.Users).FirstOrDefaultAsync(x => x.ApplicationId == id);
+                eventCount = await Context.Events.Where(x => x.Application.ApplicationId == id).CountAsync();
             }
 
-            Task.WaitAll(appTask, eventCountTask);
-            return Task.FromResult(new Tuple<Application, int>(appTask.Result, eventCountTask.Result));
+            return new Tuple<Application, int>(app, eventCount);
         }
+
 
         public async Task<EntityResult> AddEventAsync(Application app, Event evt, CancellationToken cancellationToken)
         {

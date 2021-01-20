@@ -24,7 +24,7 @@ namespace Viewer.Web.Extensions
             context.ExceptionHandled = true;
             _logger.LogError(context.Exception, "捕获到全局异常。");
             context.Result =
-                new JsonResult(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ServerError, "处理您的请求时发生错误，请稍后重试。")))
+                new ObjectResult(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ServerError, "处理您的请求时发生错误，请稍后重试。")))
                 {
                     StatusCode = 500
                 };
