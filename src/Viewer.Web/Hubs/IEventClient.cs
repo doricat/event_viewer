@@ -4,6 +4,6 @@ namespace Viewer.Web.Hubs
 {
     public interface IEventClient
     {
-        Task ReceiveMessage(EventViewModel message);
+        Task ReceiveEvent(EventViewModel message);
     }
 }
