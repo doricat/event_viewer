@@ -1,4 +1,5 @@
 ﻿using System;
+using Viewer.Web.Data.Entities;
 
 namespace Viewer.Web.ViewModels.Application
 {
@@ -17,5 +18,19 @@ namespace Viewer.Web.ViewModels.Application
         public int ProcessId { get; set; }
 
         public DateTime Timestamp { get; set; }
+
+        public static EventListGetModel FromEvent(Event evt)
+        {
+            return new EventListGetModel
+            {
+                Id = evt.Id,
+                ApplicationId = evt.ApplicationId,
+                Category = evt.Category,
+                Level = evt.Level,
+                Message = evt.Message,
+                ProcessId = evt.ProcessId,
+                Timestamp = evt.TimeStamp
+            };
+        }
     }
 }

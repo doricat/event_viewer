@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,85 +20,65 @@ namespace Viewer.Web.Controllers
 {
     [Route("api/applications")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class ApplicationsController : ControllerBase
     {
+        private readonly ILogger<ApplicationsController> _logger;
+        private readonly ApplicationManager _applicationManager;
+        private readonly IdentityGenerator _identityGenerator;
+        private readonly EventManager _eventManager;
+
         public ApplicationsController(ILogger<ApplicationsController> logger,
             ApplicationManager applicationManager,
             IdentityGenerator identityGenerator,
             EventManager eventManager)
         {
-            Logger = logger;
-            ApplicationManager = applicationManager;
-            IdentityGenerator = identityGenerator;
-            EventManager = eventManager;
+            _logger = logger;
+            _applicationManager = applicationManager;
+            _identityGenerator = identityGenerator;
+            _eventManager = eventManager;
         }
 
-        public ILogger<ApplicationsController> Logger { get; }
-
-        public ApplicationManager ApplicationManager { get; }
-
-        public IdentityGenerator IdentityGenerator { get; }
-
-        public EventManager EventManager { get; }
-
         [HttpGet]
-        public Task<IActionResult> Get()
+        public async Task<IActionResult> Get()
         {
             var isAdmin = User.IsInRole("admin");
-            var userId = long.Parse(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-            var query = isAdmin ? ApplicationManager.Applications : ApplicationManager.Applications.Where(x => x.Enabled && x.Users.Any(y => y.UserId == userId));
-            var listTask = query.OrderBy(x => x.Id).ToListAsync(HttpContext.RequestAborted);
-            var countTask = query.CountAsync(HttpContext.RequestAborted);
+            var userId = long.Parse(User.Claims.First(x => x.Type == "sub").Value);
+            var query = isAdmin
+                ? _applicationManager.Applications
+                : _applicationManager.Applications.Where(x => x.Enabled && x.Users.Any(y => y.UserId == userId));
+            var list = await query.OrderBy(x => x.Id).ToListAsync(HttpContext.RequestAborted);
+            var count = await query.CountAsync(HttpContext.RequestAborted);
 
-            Task.WaitAll(listTask, countTask);
-
-            return Task.FromResult<IActionResult>(
-                Ok(new PagedResult<IList<ApplicationGetOutputModel>>(
-                    listTask.Result.Select(x => new ApplicationGetOutputModel
-                    {
-                        Id = x.Id,
-                        ApplicationId = x.ApplicationId,
-                        Name = x.Name,
-                        Enabled = x.Enabled,
-                        Description = x.Description
-                    }).ToList()) {Count = countTask.Result}));
+            return Ok(new PagedResult<IList<ApplicationGetOutputModel>>(
+                    list.Select(ApplicationGetOutputModel.FromApplication).ToList())
+            { Count = count });
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            var (app, count) = await ApplicationManager.FindDetailByIdAsync(id);
+            var (app, count) = await _applicationManager.FindDetailByIdAsync(id);
             if (app == null)
             {
                 var msg = $"找不到指定的应用程序 {id}";
-                Logger.LogWarning(msg);
+                _logger.LogWarning(msg);
                 return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, msg)));
             }
 
-            var result = new ApplicationDetailGetOutputModel
-            {
-                Id = app.Id,
-                ApplicationId = app.ApplicationId,
-                Name = app.Name,
-                Enabled = app.Enabled,
-                Description = app.Description,
-                EventCount = count,
-                UserList = app.Users.Select(x => x.UserId).ToList()
-            };
-
+            var result = ApplicationDetailGetOutputModel.FromApplication(app, count);
             return Ok(new ApiResult<ApplicationDetailGetOutputModel>(result));
         }
 
         [HttpGet("{id}/events")]
-        public Task<IActionResult> Get(long id, // 简化只支持id
+        public async Task<IActionResult> Get(long id, // 简化只支持id
             [FromQuery(Name = "$filter")] FilterModel<EventFilterModel> filter,
             [FromQuery(Name = "$top")] int top = 20,
             [FromQuery(Name = "$skip")] int skip = 0)
         {
             if (filter != null && !string.IsNullOrWhiteSpace(filter.FilterExpr))
             {
-                Logger.LogDebug(filter.FilterExpr);
+                _logger.LogDebug(filter.FilterExpr);
             }
 
             var parameter = Expression.Parameter(typeof(Event), "x");
@@ -118,63 +97,54 @@ namespace Viewer.Web.Controllers
                 lambda = Expression.Lambda<Func<Event, bool>>(expr2, parameter);
             }
 
-            var listTask = EventManager.Events.OrderByDescending(x => x.TimeStamp).Where(lambda).Skip(skip).Take(top).ToListAsync(HttpContext.RequestAborted);
-            var countTask = EventManager.Events.CountAsync(lambda, HttpContext.RequestAborted);
+            var list = await _eventManager.Events.OrderByDescending(x => x.TimeStamp)
+                .Where(lambda)
+                .Skip(skip)
+                .Take(top)
+                .ToListAsync(HttpContext.RequestAborted);
+            var count = await _eventManager.Events.CountAsync(lambda, HttpContext.RequestAborted);
 
-            Task.WaitAll(listTask, countTask);
-
-            return Task.FromResult<IActionResult>(
-                Ok(new PagedResult<IList<EventListGetModel>>(
-                    listTask.Result.Select(x => new EventListGetModel
-                    {
-                        Id = x.Id,
-                        ApplicationId = x.ApplicationId,
-                        Category = x.Category,
-                        Level = x.Level,
-                        Message = x.Message,
-                        ProcessId = x.ProcessId,
-                        Timestamp = x.TimeStamp
-                    }).ToList())
-                {
-                    Count = countTask.Result,
-                    Sorts = new[] {"timestamp desc"}
-                }));
+            return Ok(new PagedResult<IList<EventListGetModel>>(list.Select(EventListGetModel.FromEvent).ToList())
+            {
+                Count = count,
+                Sorts = new[] { "timestamp desc" }
+            });
         }
 
         [HttpGet("{id}/events/statistics/{level:regex(^(critical|error|warning|information|debug|trace)$)}")]
         public async Task<IActionResult> Get(string id, [FromRoute] string level)
         {
-            var app = await ApplicationManager.FindByIdAsync(id);
+            var app = await _applicationManager.FindByIdAsync(id);
             if (app == null)
             {
                 var msg = $"找不到指定的应用程序 {id}";
-                Logger.LogWarning(msg);
+                _logger.LogWarning(msg);
                 return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, msg)));
             }
 
-            var result = await ApplicationManager.GetEventStatisticsAsync(app, level);
+            var result = await _applicationManager.GetEventStatisticsAsync(app, level);
             return Ok(new ApiResult<EventStatisticsResult>(result));
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
-        [ServiceFilter(typeof(OperationFilterAttribute))]
+        //[Authorize(Roles = "admin")]
+        //[ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Post([FromBody] ApplicationPostModel model)
         {
-            if (await ApplicationManager.Applications.AnyAsync(x => x.Name == model.Name || x.ApplicationId == model.ApplicationId))
+            if (await _applicationManager.Applications.AnyAsync(x => x.Name == model.Name || x.ApplicationId == model.ApplicationId))
             {
                 return BadRequest(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.BadArgument, "存在重复的名称或应用程序Id。")));
             }
 
-            var app = new Data.Entities.Application
+            var app = new Application
             {
-                Id = await IdentityGenerator.GenerateAsync(),
+                Id = await _identityGenerator.GenerateAsync(),
                 Name = model.Name,
                 ApplicationId = model.ApplicationId,
                 Description = model.Description,
                 Enabled = model.Enabled
             };
-            var result = await ApplicationManager.CreateApplicationAsync(app);
+            var result = await _applicationManager.CreateApplicationAsync(app);
 
             if (result.Succeeded)
             {
@@ -183,7 +153,9 @@ namespace Viewer.Web.Controllers
                         $"{Request.Scheme}://{Request.Host.Value}/api/applications/{app.Id}")));
             }
 
-            throw new NotImplementedException();
+            var ex = new MyApplicationException();
+            ex.SetIdentityErrors(result.Errors);
+            throw ex;
         }
 
         [HttpPut("{id}")]
@@ -191,7 +163,7 @@ namespace Viewer.Web.Controllers
         [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Put(string id, [FromBody] ApplicationPostModel model)
         {
-            var app = await ApplicationManager.FindByIdAsync(id);
+            var app = await _applicationManager.FindByIdAsync(id);
             if (app != null)
             {
                 app.Name = model.Name;
@@ -199,18 +171,20 @@ namespace Viewer.Web.Controllers
                 app.Description = model.Description;
                 app.Enabled = model.Enabled;
 
-                var result = await ApplicationManager.UpdateAsync(app);
+                var result = await _applicationManager.UpdateAsync(app);
 
                 if (result.Succeeded)
                 {
                     return NoContent();
                 }
 
-                throw new NotImplementedException();
+                var ex = new MyApplicationException();
+                ex.SetIdentityErrors(result.Errors);
+                throw ex;
             }
 
             var msg = $"找不到指定的应用程序 {id}";
-            Logger.LogWarning(msg);
+            _logger.LogWarning(msg);
             return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, msg)));
         }
 
@@ -218,21 +192,23 @@ namespace Viewer.Web.Controllers
         [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Patch(string id, [FromBody] ApplicationPatchSubscribersModel model)
         {
-            var app = await ApplicationManager.FindByIdAsync(id);
+            var app = await _applicationManager.FindByIdAsync(id);
             if (app == null)
             {
                 var msg = $"找不到指定的应用程序 {id}";
-                Logger.LogWarning(msg);
+                _logger.LogWarning(msg);
                 return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, msg)));
             }
 
-            var result = await ApplicationManager.SetSubscribersAsync(app, model.UserList);
+            var result = await _applicationManager.SetSubscribersAsync(app, model.UserList);
             if (result.Succeeded)
             {
                 return NoContent();
             }
 
-            throw new NotImplementedException();
+            var ex = new MyApplicationException();
+            ex.SetIdentityErrors(result.Errors);
+            throw ex;
         }
 
         [HttpDelete("{id}")]
@@ -240,16 +216,18 @@ namespace Viewer.Web.Controllers
         [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Delete(string id)
         {
-            var app = await ApplicationManager.FindByIdAsync(id);
+            var app = await _applicationManager.FindByIdAsync(id);
             if (app != null)
             {
-                var result = await ApplicationManager.RemoveApplicationAsync(app);
+                var result = await _applicationManager.RemoveApplicationAsync(app);
                 if (result.Succeeded)
                 {
                     return NoContent();
                 }
 
-                throw new NotImplementedException();
+                var ex = new MyApplicationException();
+                ex.SetIdentityErrors(result.Errors);
+                throw ex;
             }
 
             return NotFound(new ApiErrorResult<ApiError>(new ApiError(ApiErrorCodes.ObjectNotFound, $"找不到指定的应用程序 {id}")));

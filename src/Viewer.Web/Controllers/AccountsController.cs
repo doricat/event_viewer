@@ -40,7 +40,6 @@ namespace Viewer.Web.Controllers
             _applicationSettings = applicationSettings;
         }
 
-
         [HttpGet]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Gets()

@@ -11,5 +11,17 @@
         public string Description { get; set; }
 
         public bool Enabled { get; set; }
+
+        public static ApplicationGetOutputModel FromApplication(Data.Entities.Application app)
+        {
+            return new ApplicationDetailGetOutputModel
+            {
+                Id = app.Id,
+                ApplicationId = app.ApplicationId,
+                Name = app.Name,
+                Enabled = app.Enabled,
+                Description = app.Description
+            };
+        }
     }
 }
