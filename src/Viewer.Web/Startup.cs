@@ -111,7 +111,7 @@ namespace Viewer.Web
 
             if (!env.IsProduction())
             {
-                // app.UseSpa(builder => { builder.UseProxyToSpaDevelopmentServer("http://localhost:3000"); });
+                app.UseSpa(builder => { builder.UseProxyToSpaDevelopmentServer("http://localhost:3000"); });
             }
         }
     }

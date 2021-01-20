@@ -135,7 +135,7 @@ namespace Viewer.Web.Extensions
                 if (!string.IsNullOrWhiteSpace(fileInfo))
                 {
                     var (file, lineNo) = ParseFileAndLineNo(fileInfo);
-                    stackTrace.File = file;
+                    stackTrace.File = file.Replace('\\', '/');
                     stackTrace.Line = lineNo;
                 }
 

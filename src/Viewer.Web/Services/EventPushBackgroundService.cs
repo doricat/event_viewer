@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -73,11 +74,10 @@ namespace Viewer.Web.Services
                     EventId = item.EventId,
                     EventType = item.EventType,
                     Message = item.Message,
-                    Exception = item.Exception.SerializeToJson(),
+                    Exception = item.Exception?.SerializeToJson(),
                     ProcessId = item.ProcessId,
                     TimeStamp = item.Timestamp
                 };
-
                 _storeQueue.Enqueue(evt);
             }
         }

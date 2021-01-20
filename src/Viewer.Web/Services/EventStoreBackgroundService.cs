@@ -38,7 +38,7 @@ namespace Viewer.Web.Services
                 {
                     await _eventWriter.WriteAsync(_localQueue.ToArray(), stoppingToken);
                     _localQueue.Clear();
-                    watch.Reset();
+                    watch.Restart();
                 }
             }
         }

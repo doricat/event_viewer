@@ -11,7 +11,7 @@ namespace Viewer.Web.ViewModels.Monitor
 
         public static string GetCacheKey(string level)
         {
-            return $"{CachePrefix}{level}";
+            return $"{CachePrefix}{level.ToLower()}";
         }
 
         public IList<string> GetConnections(long applicationId)
