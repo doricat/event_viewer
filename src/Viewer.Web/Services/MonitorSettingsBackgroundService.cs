@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
@@ -25,15 +26,22 @@ namespace Viewer.Web.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 var item = await _monitorSettingsUpdatingQueue.DequeueAsync(stoppingToken);
-                if (_memoryCache.TryGetValue(MonitorSettings.CacheKey, out MonitorSettings settings))
+                var levels = item.Level == null
+                    ? new List<string> {"critical", "error", "warning", "information", "debug", "trace"}
+                    : new List<string> {item.Level};
+
+                foreach (var level in levels)
                 {
-                    if (item.Addition)
+                    if (_memoryCache.TryGetValue(MonitorSettings.GetCacheKey(level), out MonitorSettings settings))
                     {
-                        settings.AddSetting(item.ConnectionId, item.ApplicationId, item.Level);
-                    }
-                    else
-                    {
-                        settings.RemoveSetting(item.ConnectionId, item.ApplicationId, item.Level);
+                        if (item.Addition)
+                        {
+                            settings.AddConnection(item.ApplicationId, item.ConnectionId);
+                        }
+                        else
+                        {
+                            settings.RemoveConnection(item.ApplicationId, item.ConnectionId);
+                        }
                     }
                 }
             }
@@ -41,7 +49,12 @@ namespace Viewer.Web.Services
 
         private void InitCache()
         {
-            _memoryCache.Set(MonitorSettings.CacheKey, new MonitorSettings());
+            _memoryCache.Set(MonitorSettings.GetCacheKey("critical"), new MonitorSettings());
+            _memoryCache.Set(MonitorSettings.GetCacheKey("error"), new MonitorSettings());
+            _memoryCache.Set(MonitorSettings.GetCacheKey("warning"), new MonitorSettings());
+            _memoryCache.Set(MonitorSettings.GetCacheKey("information"), new MonitorSettings());
+            _memoryCache.Set(MonitorSettings.GetCacheKey("debug"), new MonitorSettings());
+            _memoryCache.Set(MonitorSettings.GetCacheKey("trace"), new MonitorSettings());
         }
     }
 }

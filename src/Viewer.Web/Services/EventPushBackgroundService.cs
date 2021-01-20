@@ -47,22 +47,20 @@ namespace Viewer.Web.Services
                 var applicationId = item.ApplicationId ?? options.CurrentApplicationId;
                 var id = await _identityGenerator.GenerateAsync();
 
-                if (_memoryCache.TryGetValue(MonitorSettings.CacheKey, out MonitorSettings settings))
+                if (_memoryCache.TryGetValue(MonitorSettings.GetCacheKey(item.Level), out MonitorSettings settings))
                 {
-                    if (settings.ShouldPush(item.Level, out var connections))
+                    var connections = settings.GetConnections(applicationId);
+                    await _hubContext.Clients.Clients(connections.ToList()).ReceiveEvent(new EventViewModel
                     {
-                        await _hubContext.Clients.Clients(connections.ToList()).ReceiveEvent(new EventViewModel
-                        {
-                            Id = id,
-                            Level = item.Level,
-                            Category = item.Category,
-                            Message = item.Message,
-                            ApplicationId = applicationId,
-                            EventId = item.EventId,
-                            EventType = item.EventType,
-                            Timestamp = item.Timestamp
-                        });
-                    }
+                        Id = id,
+                        Level = item.Level,
+                        Category = item.Category,
+                        Message = item.Message,
+                        ApplicationId = applicationId,
+                        EventId = item.EventId,
+                        EventType = item.EventType,
+                        Timestamp = item.Timestamp
+                    });
                 }
 
                 var evt = new Event

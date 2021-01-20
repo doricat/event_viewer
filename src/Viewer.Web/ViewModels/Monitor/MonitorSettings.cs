@@ -5,65 +5,47 @@ namespace Viewer.Web.ViewModels.Monitor
 {
     public class MonitorSettings
     {
-        public const string CacheKey = "MonitorSettingsCacheKey";
+        public const string CachePrefix = "MonitorSettings_";
 
-        public IDictionary<string, HashSet<long>> Connections { get; set; } = new Dictionary<string, HashSet<long>>();
+        public IDictionary<long, HashSet<string>> ApplicationConnections { get; set; } = new Dictionary<long, HashSet<string>>();
 
-        public IDictionary<long, HashSet<string>> Levels { get; set; } = new Dictionary<long, HashSet<string>>();
-
-        public bool ShouldPush(string level, out IList<string> connections)
+        public static string GetCacheKey(string level)
         {
-            if (!Connections.Any())
+            return $"{CachePrefix}{level}";
+        }
+
+        public IList<string> GetConnections(long applicationId)
+        {
+            if (ApplicationConnections.ContainsKey(applicationId))
             {
-                connections = new List<string>(0);
-                return false;
+                return ApplicationConnections[applicationId].ToList();
             }
 
-            connections = new List<string>();
+            return new List<string>(0);
+        }
 
-            foreach (var (connection, applications) in Connections)
+        public void AddConnection(long applicationId, string connectionId)
+        {
+            if (ApplicationConnections.ContainsKey(applicationId))
             {
-                foreach (var l in applications)
+                ApplicationConnections[applicationId].Add(connectionId);
+            }
+            else
+            {
+                ApplicationConnections.Add(applicationId, new HashSet<string>{ connectionId });
+            }
+        }
+
+        public void RemoveConnection(long applicationId, string connectionId)
+        {
+            if (ApplicationConnections.ContainsKey(applicationId))
+            {
+                ApplicationConnections[applicationId].Remove(connectionId);
+
+                if (!ApplicationConnections[applicationId].Any())
                 {
-                    if (Levels.TryGetValue(l, out var levels))
-                    {
-                        if (levels.Contains(level))
-                        {
-                            connections.Add(connection);
-                        }
-                    }
+                    ApplicationConnections.Remove(applicationId);
                 }
-            }
-
-            return false;
-        }
-
-        public void AddSetting(string connectionId, long applicationId, string level)
-        {
-            if (Connections.ContainsKey(connectionId))
-            {
-                Levels[applicationId].Add(level);
-            }
-            else
-            {
-                Connections.Add(connectionId, new HashSet<long>{ applicationId });
-                Levels.Add(applicationId, new HashSet<string>
-                {
-                    "critical", "error", "warning", "information", "debug", "trace"
-                });
-            }
-        }
-
-        public void RemoveSetting(string connectionId, long applicationId, string level)
-        {
-            if (level == null)
-            {
-                Levels.Remove(applicationId);
-                Connections.Remove(connectionId);
-            }
-            else
-            {
-                Levels[applicationId].Remove(level);
             }
         }
     }
