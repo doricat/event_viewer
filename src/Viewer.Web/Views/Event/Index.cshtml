@@ -1,0 +1,43 @@
+﻿@model Viewer.Web.Data.Entities.Event
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@Model.Id - Event Viewer</title>
+    <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css"/>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-sm navbar-light navbar-toggleable-sm bg-white border-bottom box-shadow mb-3">
+        <div class="container">
+            <a class="navbar-brand" href="~/">Event Viewer</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+</header>
+
+<div class="container">
+    <main role="main" class="pb-3">
+        <p>@Model.Id</p>
+        <p>@Model.ApplicationId</p>
+        <p>@Model.Category</p>
+        <p>@Model.Level</p>
+        <p>@Model.Message</p>
+        <p>@Model.Exception</p>
+        <p>@Model.TimeStamp</p>
+    </main>
+</div>
+<footer class="footer border-top text-muted">
+    <div class="container">
+        &copy; 2020 - Event Viewer
+    </div>
+</footer>
+<script src="~/lib/jquery/jquery.min.js"></script>
+<script src="~/lib/twitter-bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

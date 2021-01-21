@@ -1,5 +1,4 @@
 ﻿using System;
-using Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Viewer.Web.Extensions.Logging

@@ -8,13 +8,13 @@ namespace Viewer.Web.Data
 {
     public class FileStore : IFileStore
     {
-        public FileStore(ApplicationDbContext dbContext, EntityErrorDescriber errorDescriber)
+        public FileStore(MyDbContext dbContext, EntityErrorDescriber errorDescriber)
         {
             DbContext = dbContext;
             ErrorDescriber = errorDescriber;
         }
 
-        public ApplicationDbContext DbContext { get; }
+        public MyDbContext DbContext { get; }
 
         protected DbSet<FileMetadata> Files => DbContext.Files;
 

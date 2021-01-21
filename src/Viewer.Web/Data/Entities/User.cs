@@ -7,7 +7,7 @@ namespace Viewer.Web.Data.Entities
     {
         public string Name { get; set; }
 
-        public string Avatar { get; set; }
+        public long AvatarId { get; set; }
 
         public virtual ICollection<UserApplication> Applications { get; set; }
     }

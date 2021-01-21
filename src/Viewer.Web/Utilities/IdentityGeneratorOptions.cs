@@ -2,6 +2,6 @@
 {
     public class IdentityGeneratorOptions
     {
-        public int MachineTag { get; set; }
+        public int InstanceTag { get; set; }
     }
 }

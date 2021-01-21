@@ -1,17 +1,17 @@
-﻿using System.Text;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Hosting;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
 using Viewer.Web.Hubs;
+using Viewer.Web.Infrastructure;
 using Viewer.Web.Services;
 using Viewer.Web.Utilities;
 
@@ -19,101 +19,73 @@ namespace Viewer.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostEnvironment hostEnvironment)
         {
             Configuration = configuration;
+            HostEnvironment = hostEnvironment;
         }
 
         public IConfiguration Configuration { get; }
 
+        public IHostEnvironment HostEnvironment { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
+            var databaseEnvironment = new MyDatabaseEnvironment(Environment.GetEnvironmentVariable("DATABASE_ENVIRONMENT"));
+
+            services.AddControllersWithViews(options =>
+                {
+                    options.Filters.Add<ApiModelStateCheckFilterAttribute>();
+                    options.Filters.Add<ApiExceptionFilterAttribute>();
+                }).ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
+                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddRazorPages();
+
+            if (databaseEnvironment.IsPostgreSQL())
             {
-                options.Filters.Add<ApiModelStateCheckFilterAttribute>();
-                options.Filters.Add<ApiExceptionFilterAttribute>();
-            }).ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                services.AddDbContext<MyDbContext, PostgreSqlDbContext>(ServiceLifetime.Scoped);
+                services.AddIdentity<User, Role>().AddEntityFrameworkStores<PostgreSqlDbContext>();
+                services.AddIdentityServer().AddApiAuthorization<User, PostgreSqlDbContext>().AddProfileService<ProfileService>();
+            }
+            else if (databaseEnvironment.IsSQLite())
+            {
+                services.AddDbContext<MyDbContext, SqliteDbContext>(ServiceLifetime.Scoped);
+                services.AddIdentity<User, Role>().AddEntityFrameworkStores<SqliteDbContext>();
+                services.AddIdentityServer().AddApiAuthorization<User, SqliteDbContext>().AddProfileService<ProfileService>();
+            }
 
-            services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
-
-            services.AddDbContext<ApplicationDbContext>(builder => builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<User, Role>().AddEntityFrameworkStores<ApplicationDbContext>();
-
-            var secret = Configuration.GetValue<string>("Secret");
-            services.Configure<SecretOptions>(x => x.Secret = secret);
-
-            var key = Encoding.ASCII.GetBytes(secret);
-            services.AddAuthentication(x =>
+            services.AddAuthentication().AddIdentityServerJwt().AddJwtBearer(options =>
+            {
+                options.Events.OnAuthenticationFailed = context =>
                 {
-                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(x =>
-                {
-                    x.RequireHttpsMetadata = false;
-                    x.SaveToken = true;
-                    x.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
-                        ValidateIssuer = false,
-                        ValidateAudience = false
-                    };
+                    context.Response.StatusCode = 401;
+                    return Task.CompletedTask;
+                };
 
-                    x.Events = new JwtBearerEvents
-                    {
-                        OnMessageReceived = context =>
-                        {
-                            var accessToken = context.Request.Query["access_token"];
-                            var path = context.HttpContext.Request.Path;
-                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/EventHub"))
-                            {
-                                context.Token = accessToken;
-                            }
+                options.Events.OnForbidden = context => Task.CompletedTask;
+            });
 
-                            return Task.CompletedTask;
-                        }
-                    };
-                });
-
-            services.AddCors(options => options.AddPolicy("CorsPolicy",
-                builder =>
-                {
-                    builder.AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .WithOrigins("http://localhost:13001")
-                        .AllowCredentials();
-                }));
-
-            services.AddScoped<DemoFilterAttribute>();
-
-            services.Configure<IdentityGeneratorOptions>(x => x.MachineTag = 1);
-            services.AddSingleton<IdentityGenerator>();
-            services.AddScoped<ApplicationManager>();
-            services.AddScoped<EntityErrorDescriber>();
-            services.AddScoped<IApplicationStore, ApplicationStore>();
-
-            services.Configure<LocalFileStorageServiceOptions>(x => Configuration.GetValue<string>("FileUploadRootDirectory"));
-            services.AddScoped<IFileStore, FileStore>();
-            services.AddScoped<LocalFileStorageService>();
-            services.AddScoped<FileManager>();
-
-            services.AddScoped<IEventStore, EventStore>();
-            services.AddScoped<EventManager>();
-
-            services.AddMyHostedService();
-
-            services.Configure<PrimarySettings>(x => Configuration.GetSection("PrimarySettings").Bind(x));
-
+            services.AddMemoryCache();
             services.AddSignalR();
+
+            services.AddSingleton<IdentityGenerator>();
+            services.AddScoped<EntityErrorDescriber>();
+
+            services.Configure<IdentityGeneratorOptions>(x => x.InstanceTag = 1);
+            services.Configure<LocalFileStorageServiceOptions>(x => x.RootDirectory = Configuration.GetValue<string>("FileUploadRootDirectory"));
+            services.Configure<ApplicationSettings>(x => Configuration.GetSection("ApplicationSettings").Bind(x));
+            services.Configure<ApplicationEnvironment>(environment => environment.DatabaseEnvironment = databaseEnvironment);
+
+            services.AddStores(databaseEnvironment).AddManagers();
+            services.AddMyHostedService(databaseEnvironment);
+            services.AddTransient<IEmailSender, FakeEmailSender>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
-            if (env.IsDevelopment() || env.IsEnvironment("demo"))
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
             }
             else
             {
@@ -123,31 +95,24 @@ namespace Viewer.Web
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
-
+            app.UseRouting();
             app.UseAuthentication();
+            app.UseIdentityServer();
+            app.UseAuthorization();
 
-            app.UseCors("CorsPolicy");
-
-            app.UseSignalR(routes => { routes.MapHub<EventHub>("/EventHub"); });
-
-            app.UseMvc(routes =>
+            app.UseEndpoints(builder =>
             {
-                routes.MapRoute(
+                builder.MapHub<EventHub>("/hub/event");
+                builder.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
+                    pattern: "{controller}/{action=Index}/{id?}");
+                builder.MapRazorPages();
             });
 
-            app.UseSpa(spa =>
+            if (!env.IsProduction())
             {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment() || env.IsEnvironment("demo"))
-                {
-                    // spa.UseReactDevelopmentServer(npmScript: "start");
-                    spa.UseProxyToSpaDevelopmentServer("http://localhost:13001");
-                }
-            });
+                app.UseSpa(builder => { builder.UseProxyToSpaDevelopmentServer("http://localhost:3000"); });
+            }
         }
     }
 }

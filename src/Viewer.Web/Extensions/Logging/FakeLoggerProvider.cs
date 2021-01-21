@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Viewer.Web.Services;
@@ -27,16 +26,16 @@ namespace Viewer.Web.Extensions.Logging
 
         private readonly int _processId;
 
-        private readonly IEventStoreQueue _eventStoreQueue;
+        private readonly IEventQueue _eventQueue;
 
-        public FakeLoggerProvider(IOptionsMonitor<FakeLoggerOptions> options, IEventStoreQueue eventStoreQueue)
+        public FakeLoggerProvider(IOptionsMonitor<FakeLoggerOptions> options, IEventQueue eventQueue)
         {
             var loggerOptions = options.CurrentValue;
             _interval = loggerOptions.FlushPeriod;
             _batchSize = loggerOptions.BatchSize;
             _queueSize = loggerOptions.BackgroundQueueSize;
 
-            _eventStoreQueue = eventStoreQueue ?? throw new ArgumentNullException(nameof(eventStoreQueue));
+            _eventQueue = eventQueue ?? throw new ArgumentNullException(nameof(eventQueue));
 
             _processId = Process.GetCurrentProcess().Id;
 
@@ -83,7 +82,7 @@ namespace Viewer.Web.Extensions.Logging
         {
             foreach (var message in messages)
             {
-                _eventStoreQueue.QueueBackgroundWorkItem(message);
+                _eventQueue.Enqueue(message);
             }
 
             return Task.CompletedTask;

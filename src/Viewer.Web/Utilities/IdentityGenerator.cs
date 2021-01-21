@@ -12,7 +12,7 @@ namespace Viewer.Web.Utilities
         public IdentityGenerator(IOptionsMonitor<IdentityGeneratorOptions> generatorOptions)
         {
             GeneratorOptions = generatorOptions.CurrentValue;
-            if (GeneratorOptions.MachineTag > 31 || GeneratorOptions.MachineTag < 0)
+            if (GeneratorOptions.InstanceTag > 31 || GeneratorOptions.InstanceTag < 0)
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -26,7 +26,7 @@ namespace Viewer.Web.Utilities
             Interlocked.CompareExchange(ref _i, -1, ushort.MaxValue);
             var seq = Interlocked.Increment(ref _i);
             // 5bit + 16bit + 32bit
-            var value = ((long)GeneratorOptions.MachineTag << 48) + ((long)seq << 32) + ticks;
+            var value = ((long)GeneratorOptions.InstanceTag << 48) + ((long)seq << 32) + ticks;
             return Task.FromResult(value);
         }
     }
