@@ -8,13 +8,9 @@
 
   <ItemGroup>
     <Compile Remove="upload\**" />
-    <Compile Remove="Views\**" />
     <Content Remove="upload\**" />
-    <Content Remove="Views\**" />
     <EmbeddedResource Remove="upload\**" />
-    <EmbeddedResource Remove="Views\**" />
     <None Remove="upload\**" />
-    <None Remove="Views\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +31,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />

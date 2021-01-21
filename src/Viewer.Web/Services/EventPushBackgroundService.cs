@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -51,17 +50,20 @@ namespace Viewer.Web.Services
                 if (_memoryCache.TryGetValue(MonitorSettings.GetCacheKey(item.Level), out MonitorSettings settings))
                 {
                     var connections = settings.GetConnections(applicationId);
-                    await _hubContext.Clients.Clients(connections.ToList()).ReceiveEvent(new EventViewModel
+                    if (connections.Any())
                     {
-                        Id = id,
-                        Level = item.Level,
-                        Category = item.Category,
-                        Message = item.Message,
-                        ApplicationId = applicationId,
-                        EventId = item.EventId,
-                        EventType = item.EventType,
-                        Timestamp = item.Timestamp
-                    });
+                        await _hubContext.Clients.Clients(connections.ToList()).ReceiveEvent(new EventViewModel
+                        {
+                            Id = id,
+                            Level = item.Level,
+                            Category = item.Category,
+                            Message = item.Message,
+                            ApplicationId = applicationId,
+                            EventId = item.EventId,
+                            EventType = item.EventType,
+                            Timestamp = item.Timestamp
+                        });
+                    }
                 }
 
                 var evt = new Event

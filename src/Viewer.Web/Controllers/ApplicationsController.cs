@@ -20,7 +20,7 @@ namespace Viewer.Web.Controllers
 {
     [Route("api/applications")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ApplicationsController : ControllerBase
     {
         private readonly ILogger<ApplicationsController> _logger;

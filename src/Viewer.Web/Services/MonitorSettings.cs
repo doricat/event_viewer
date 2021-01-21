@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Viewer.Web.ViewModels.Monitor
+namespace Viewer.Web.Services
 {
     public class MonitorSettings
     {

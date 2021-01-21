@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Viewer.Web.Data.Entities;
 
@@ -19,5 +20,10 @@ namespace Viewer.Web.Data
         protected EntityErrorDescriber ErrorDescriber { get; }
 
         public IQueryable<Event> Apps => Events;
+
+        public async Task<Event> FindByIdAsync(long id)
+        {
+            return await Events.FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }
