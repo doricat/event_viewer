@@ -10,9 +10,11 @@ namespace Viewer.Web.Services
             services.AddSingleton<IEventStoreQueue, EventStoreQueue>();
             services.AddSingleton<IEventQueue, EventQueue>();
             services.AddSingleton<IMonitorSettingsUpdatingQueue, MonitorSettingsUpdatingQueue>();
+            services.AddSingleton<IEventCleaningQueue, EventCleaningQueue>();
             services.AddHostedService<EventStoreBackgroundService>();
             services.AddHostedService<EventPushBackgroundService>();
             services.AddHostedService<MonitorSettingsBackgroundService>();
+            services.AddHostedService<EventCleaningBackgroundService>();
             services.AddSingleton<IEventDbWriter, EventWriter>();
 
             return services;

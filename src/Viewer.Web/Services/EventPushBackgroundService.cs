@@ -10,7 +10,6 @@ using Viewer.Web.Extensions;
 using Viewer.Web.Hubs;
 using Viewer.Web.Infrastructure;
 using Viewer.Web.Utilities;
-using Viewer.Web.ViewModels.Monitor;
 
 namespace Viewer.Web.Services
 {
@@ -22,13 +21,17 @@ namespace Viewer.Web.Services
         private readonly IdentityGenerator _identityGenerator;
         private readonly IOptions<ApplicationSettings> _options;
         private readonly IMemoryCache _memoryCache;
+        private readonly IHostEnvironment _environment;
+        private readonly IEventCleaningQueue _cleaningQueue;
 
         public EventPushBackgroundService(IEventQueue eventQueue, 
             IHubContext<EventHub, IEventClient> hubContext, 
             IdentityGenerator identityGenerator, 
             IOptions<ApplicationSettings> options, 
             IEventStoreQueue storeQueue, 
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache, 
+            IHostEnvironment environment, 
+            IEventCleaningQueue cleaningQueue)
         {
             _eventQueue = eventQueue;
             _hubContext = hubContext;
@@ -36,6 +39,8 @@ namespace Viewer.Web.Services
             _options = options;
             _storeQueue = storeQueue;
             _memoryCache = memoryCache;
+            _environment = environment;
+            _cleaningQueue = cleaningQueue;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -46,6 +51,11 @@ namespace Viewer.Web.Services
                 var item = await _eventQueue.DequeueAsync(stoppingToken);
                 var applicationId = item.ApplicationId ?? options.CurrentApplicationId;
                 var id = await _identityGenerator.GenerateAsync();
+
+                if (_environment.IsDemo())
+                {
+                    _cleaningQueue.Enqueue(applicationId);
+                }
 
                 if (_memoryCache.TryGetValue(MonitorSettings.GetCacheKey(item.Level), out MonitorSettings settings))
                 {
