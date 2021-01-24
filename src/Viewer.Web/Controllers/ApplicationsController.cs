@@ -127,8 +127,8 @@ namespace Viewer.Web.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "admin")]
-        //[ServiceFilter(typeof(OperationFilterAttribute))]
+        [Authorize(Roles = "admin")]
+        [ServiceFilter(typeof(OperationFilterAttribute))]
         public async Task<IActionResult> Post([FromBody] ApplicationPostModel model)
         {
             if (await _applicationManager.Applications.AnyAsync(x => x.Name == model.Name || x.ApplicationId == model.ApplicationId))

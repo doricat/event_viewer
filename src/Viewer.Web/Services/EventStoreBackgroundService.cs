@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Viewer.Web.Data.Entities;
+using Viewer.Web.Extensions;
 using Viewer.Web.Infrastructure;
 
 namespace Viewer.Web.Services
@@ -15,14 +17,20 @@ namespace Viewer.Web.Services
         private readonly IEventDbWriter _eventWriter;
         private readonly Queue<Event> _localQueue;
         private readonly IOptions<ApplicationSettings> _options;
+        private readonly IEventCleaner _eventCleaner;
+        private readonly IHostEnvironment _environment;
 
         public EventStoreBackgroundService(IEventStoreQueue storeQueue,
-            IEventDbWriter eventWriter, 
-            IOptions<ApplicationSettings> options)
+            IEventDbWriter eventWriter,
+            IOptions<ApplicationSettings> options,
+            IEventCleaner eventCleaner,
+            IHostEnvironment environment)
         {
             _storeQueue = storeQueue;
             _eventWriter = eventWriter;
             _options = options;
+            _eventCleaner = eventCleaner;
+            _environment = environment;
             _localQueue = new Queue<Event>();
         }
 
@@ -39,6 +47,11 @@ namespace Viewer.Web.Services
                     await _eventWriter.WriteAsync(_localQueue.ToArray(), stoppingToken);
                     _localQueue.Clear();
                     watch.Restart();
+
+                    if (_environment.IsDemo())
+                    {
+                        await _eventCleaner.CleanAsync(evt.ApplicationId, DateTime.Now.AddDays(-7), stoppingToken);
+                    }
                 }
             }
         }

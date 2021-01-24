@@ -6,6 +6,6 @@ namespace Viewer.Web.Services
 {
     public interface IEventCleaner
     {
-        Task CleanAsync(long appId, DateTime? startTime, DateTime? endTime, CancellationToken cancellationToken);
+        Task CleanAsync(long applicationId, DateTime? endTime, CancellationToken cancellationToken);
     }
 }
