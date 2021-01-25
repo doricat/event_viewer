@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Viewer.Web.Data.Entities;
-using Viewer.Web.Extensions;
 using Viewer.Web.Infrastructure;
 
 namespace Viewer.Web.Services
@@ -18,24 +18,32 @@ namespace Viewer.Web.Services
         private readonly Queue<Event> _localQueue;
         private readonly IOptions<ApplicationSettings> _options;
         private readonly IEventCleaner _eventCleaner;
-        private readonly IHostEnvironment _environment;
+        private readonly IHostApplicationLifetime _applicationLifetime;
 
         public EventStoreBackgroundService(IEventStoreQueue storeQueue,
             IEventDbWriter eventWriter,
             IOptions<ApplicationSettings> options,
             IEventCleaner eventCleaner,
-            IHostEnvironment environment)
+            IHostApplicationLifetime applicationLifetime)
         {
             _storeQueue = storeQueue;
             _eventWriter = eventWriter;
             _options = options;
             _eventCleaner = eventCleaner;
-            _environment = environment;
+            _applicationLifetime = applicationLifetime;
             _localQueue = new Queue<Event>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _applicationLifetime.ApplicationStopping.Register(async () =>
+            {
+                if (_localQueue.Any())
+                {
+                    await _eventWriter.WriteAsync(_localQueue.ToArray(), stoppingToken);
+                }
+            });
+
             var watch = Stopwatch.StartNew();
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -48,9 +56,10 @@ namespace Viewer.Web.Services
                     _localQueue.Clear();
                     watch.Restart();
 
-                    if (_environment.IsDemo())
+                    if (_options.Value.EventStoragePeriod != null)
                     {
-                        await _eventCleaner.CleanAsync(evt.ApplicationId, DateTime.Now.AddDays(-7), stoppingToken);
+                        await _eventCleaner.CleanAsync(evt.ApplicationId, 
+                            DateTime.Now.AddDays(-_options.Value.EventStoragePeriod.Value), stoppingToken);
                     }
                 }
             }

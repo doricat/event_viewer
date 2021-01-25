@@ -9,5 +9,7 @@
         public string CurrentApplicationCode { get; set; }
 
         public int EventFlushPeriod { get; set; } = 5;
+
+        public int? EventStoragePeriod { get; set; }
     }
 }
