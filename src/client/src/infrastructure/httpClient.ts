@@ -49,6 +49,21 @@ export class HttpClient {
         return (source: Observable<Response>) => new Observable<T>(observer => {
             return source.subscribe({
                 async next(response: Response) {
+                    const contentType = response.headers.get('content-type') || '';
+
+                    const context: ResponseContext = {
+                        status: response.status,
+                        data: undefined,
+                        headers: response.headers,
+                        ok: response.ok
+                    };
+
+                    if (contentType.startsWith('text/html')) {
+                        context.ok = false;
+                        observer.error(context);
+                        return;
+                    }
+
                     if (response.ok) {
                         if (response.status !== 204) {
                             const json = await response.json();
@@ -58,14 +73,7 @@ export class HttpClient {
                             observer.next(true as unknown as T);
                         }
                     } else {
-                        const context: ResponseContext = {
-                            status: response.status,
-                            data: undefined,
-                            headers: response.headers,
-                            ok: response.ok
-                        };
-
-                        if ((response.headers.get('content-type') || '').startsWith('application/json')) {
+                        if (contentType.startsWith('application/json')) {
                             context.data = await response.json();
                         }
 
