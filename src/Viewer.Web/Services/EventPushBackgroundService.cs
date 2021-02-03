@@ -10,7 +10,6 @@ using Viewer.Web.Extensions;
 using Viewer.Web.Hubs;
 using Viewer.Web.Infrastructure;
 using Viewer.Web.Utilities;
-using Viewer.Web.ViewModels.Monitor;
 
 namespace Viewer.Web.Services
 {

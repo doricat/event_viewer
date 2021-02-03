@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Models;
 
 namespace Viewer.Web.Controllers
 {
@@ -16,7 +18,7 @@ namespace Viewer.Web.Controllers
         public IActionResult GetClientRequestParameters([FromRoute] string clientId)
         {
             var parameters = _clientRequestParametersProvider.GetClientParameters(HttpContext, clientId);
-            return Ok(parameters);
+            return Ok(new ApiResult<IDictionary<string, string>>(parameters));
         }
     }
 }

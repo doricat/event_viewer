@@ -15,6 +15,15 @@ namespace Viewer.Web.Services
             services.AddHostedService<MonitorSettingsBackgroundService>();
             services.AddSingleton<IEventDbWriter, EventWriter>();
 
+            if (databaseEnvironment.IsPostgreSQL())
+            {
+                services.AddSingleton<IEventCleaner, PostgreSqlEventCleaner>();
+            }
+            else if (databaseEnvironment.IsSQLite())
+            {
+                services.AddSingleton<IEventCleaner, SqliteEventCleaner>();
+            }
+
             return services;
         }
     }
