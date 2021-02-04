@@ -1,13 +1,13 @@
 import { EventLevel } from "../shared";
 
-export interface ApplicationCreationModel {
+export interface ApplicationEditionModel {
     name: string;
     applicationId: string;
     description?: string;
     enabled: boolean;
 }
 
-export interface ApplicationGetModel extends ApplicationCreationModel {
+export interface ApplicationGetModel extends ApplicationEditionModel {
     id: number;
 }
 
