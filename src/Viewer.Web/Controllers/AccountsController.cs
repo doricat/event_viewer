@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Viewer.Web.ApiModels;
@@ -38,14 +36,6 @@ namespace Viewer.Web.Controllers
             _fileManager = fileManager;
             _errorDescriber = errorDescriber;
             _applicationSettings = applicationSettings;
-        }
-
-        [HttpGet]
-        [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Gets()
-        {
-            var users = await _userManager.Users.ToListAsync(HttpContext.RequestAborted);
-            return Ok(new ApiResult<IList<AccountGetOutputModel>>(users.Select(AccountGetOutputModel.FromUser).ToList()));
         }
 
         [Authorize]

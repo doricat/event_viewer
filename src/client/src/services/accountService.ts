@@ -6,7 +6,7 @@ import { ApiResult } from '../models/apiResult';
 import { HttpClient } from '../infrastructure/httpClient';
 import { HandleError } from '../infrastructure/httpResponseHandler';
 import { httpErrorMessageService } from './httpErrorMessageService';
-import { AccountGetModel, AccountPasswordPatchModel } from '../models/api/account';
+import { PasswordPatchModel } from '../models/api/account';
 
 export class AccountService {
     constructor(httpErrorHandler: HttpErrorHandler) {
@@ -17,12 +17,12 @@ export class AccountService {
     private handleError: HandleError;
     private http: HttpClient;
 
-    getUsers(accessToken: string, traceId: number): Observable<ApiResult<AccountGetModel[]> | null> {
-        return this.http.get<ApiResult<AccountGetModel[]>>('/api/accounts', buildRequestHeader(accessToken))
-            .pipe(catchError(this.handleError(this.getUsers.name, traceId, null)));
+    loadProfile(userId: number, accessToken: string, traceId: number): Observable<ApiResult<{ name: string, avatar: string }> | null> {
+        return this.http.get<ApiResult<{ name: string, avatar: string }>>(`/api/accounts/${userId}/profile`, buildJsonContentRequestHeader(accessToken))
+            .pipe(catchError(this.handleError(this.loadProfile.name, traceId, null)));
     }
 
-    replacePassword(userId: number, model: AccountPasswordPatchModel, accessToken: string, traceId: number): Observable<boolean> {
+    replacePassword(userId: number, model: PasswordPatchModel, accessToken: string, traceId: number): Observable<boolean> {
         return this.http.patch<boolean>(`/api/accounts/${userId}/password`, buildJsonContentRequestHeader(accessToken), model)
             .pipe(catchError(this.handleError(this.replacePassword.name, traceId, false)));
     }

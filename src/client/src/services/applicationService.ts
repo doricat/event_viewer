@@ -11,7 +11,7 @@ import {
     ApplicationGetModel,
     ApplicationDetailGetModel,
     EventStatisticsGetModel,
-    ApplicationCreationModel
+    ApplicationEditionModel
 } from '../models/api/application';
 import { EventGetModel } from '../models/api/event';
 
@@ -41,12 +41,12 @@ export class ApplicationService {
         }).pipe(catchError(this.handleError(this.saveSubscribers.name, traceId, false)));
     }
 
-    replaceApplication(applicationId: number, model: ApplicationCreationModel, accessToken: string, traceId: number): Observable<boolean> {
+    replaceApplication(applicationId: number, model: ApplicationEditionModel, accessToken: string, traceId: number): Observable<boolean> {
         return this.http.put<boolean>(`/api/applications/${applicationId}`, buildJsonContentRequestHeader(accessToken), model)
             .pipe(catchError(this.handleError(this.replaceApplication.name, traceId, false)));
     }
 
-    createApplication(model: ApplicationCreationModel, accessToken: string, traceId: number): Observable<ApiResult<CreatedResult> | null> {
+    createApplication(model: ApplicationEditionModel, accessToken: string, traceId: number): Observable<ApiResult<CreatedResult> | null> {
         return this.http.post<ApiResult<CreatedResult>>('/api/applications', buildJsonContentRequestHeader(accessToken), model)
             .pipe(catchError(this.handleError(this.createApplication.name, traceId, null)));
     }

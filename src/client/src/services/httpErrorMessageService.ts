@@ -1,13 +1,5 @@
 import { Observable, Subject } from 'rxjs';
-
-export interface HttpErrorMessage {
-    serviceName: string;
-    operation: string;
-    httpStatus: number;
-    data: any;
-    headers: Headers;
-    eventId: number;
-}
+import { HttpErrorMessage } from '../models/entity/error';
 
 export class HttpErrorMessageService {
     private subject = new Subject<HttpErrorMessage>();
