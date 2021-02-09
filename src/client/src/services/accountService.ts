@@ -18,7 +18,7 @@ export class AccountService {
     private http: HttpClient;
 
     loadProfile(userId: number, accessToken: string, traceId: number): Observable<ApiResult<{ name: string, avatar: string }> | null> {
-        return this.http.get<ApiResult<{ name: string, avatar: string }>>(`/api/accounts/${userId}/profile`, buildJsonContentRequestHeader(accessToken))
+        return this.http.get<ApiResult<{ name: string, avatar: string }>>(`/api/accounts/${userId}/profiles`, buildJsonContentRequestHeader(accessToken))
             .pipe(catchError(this.handleError(this.loadProfile.name, traceId, null)));
     }
 
