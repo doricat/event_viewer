@@ -30,5 +30,4 @@ export class AuthorizeService {
     }
 }
 
-const authorizeService = new AuthorizeService(new HttpErrorHandler(httpErrorMessageService));
-export { authorizeService };
+export const authorizeService = new AuthorizeService(new HttpErrorHandler(httpErrorMessageService));
