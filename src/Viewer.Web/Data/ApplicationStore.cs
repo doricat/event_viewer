@@ -149,7 +149,6 @@ namespace Viewer.Web.Data
             return new Tuple<Application, int>(app, eventCount);
         }
 
-
         public async Task<EntityResult> AddEventAsync(Application app, Event evt, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
