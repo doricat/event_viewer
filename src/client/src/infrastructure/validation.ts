@@ -27,15 +27,16 @@ export class VerifiableProperty<T extends VerifiableType> {
             const message = x(this.value, this.displayName);
             if (message !== undefined) {
                 this.validationResult.push(message);
+                return;
             }
-        })
+        });
     }
 
-    public get Invalid(): boolean {
+    public get invalid(): boolean {
         return this.validationResult.length > 0;
     }
 
     public get firstError(): string | undefined {
-        return this.Invalid ? this.validationResult[0] : undefined;
+        return this.invalid ? this.validationResult[0] : undefined;
     }
 }

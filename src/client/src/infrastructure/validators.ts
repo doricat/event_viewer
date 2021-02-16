@@ -1,4 +1,4 @@
-import { isString, isNumber } from 'lodash';
+import { isString, isNumber, isEqual } from 'lodash';
 
 export function createRequired() {
     return function (value: any, displayName: string): string | undefined {
@@ -56,6 +56,17 @@ export function createRange(min: number, max: number) {
             return `${displayName}必须在${min}和${max}之间`;
         }
 
+        return undefined;
+    }
+}
+
+export function createCompare(getOther: () => {name: string, value: any}) {
+    return function (value: any, displayName: string): string | undefined {
+        const other = getOther();
+        if (!isEqual(value, other.value)) {
+            return `${displayName}和${other.name}不匹配`;
+        }
+        
         return undefined;
     }
 }
