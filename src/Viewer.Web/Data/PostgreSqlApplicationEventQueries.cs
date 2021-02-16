@@ -34,21 +34,21 @@ namespace Viewer.Web.Data
                 var result = await conn.QueryFirstAsync<EventStatisticsResult>(@"
 with cte as (
     select count(*) as value, 'last1hour' as name
-    from Events
+    from events
     where application_id = @app_id
-      and level = @level
+      and level = lower(@level)
       and timestamp between @one_hour_ago and @now
     union all
     select count(*) as value, 'last24hours' as name
-    from Events
+    from events
     where application_id = @app_id
-      and level = @level
+      and level = lower(@level)
       and timestamp between @one_day_ago and @now
     union all
-    select count(*) as value, 'last24hours' as name
-    from Events
+    select count(*) as value, 'last7days' as name
+    from events
     where application_id = @app_id
-      and level = @level
+      and level = lower(@level)
       and timestamp between @seven_days_ago and @now
 )
 select max(case name when 'last1hour' then value else 0 end)   last1hour,

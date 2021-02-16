@@ -25,15 +25,15 @@ class Store {
     signState: Map<number, [string, SignState]> = new Map();
 
     setRequestWaiting(traceId: number): void {
-        this.requestStates.set(traceId, 'waiting');
+        this.requestStates.set(traceId, RequestState.waiting());
     }
 
     setRequestSuccess(traceId: number): void {
-        this.requestStates.set(traceId, 'success');
+        this.requestStates.set(traceId, RequestState.success());
     }
 
     setRequestFailed(traceId: number): void {
-        this.requestStates.set(traceId, 'failed');
+        this.requestStates.set(traceId, RequestState.fail());
     }
 
     setSignRedirect(traceId: number): void {

@@ -79,6 +79,7 @@ namespace Viewer.Web
             services.AddStores(databaseEnvironment).AddManagers();
             services.AddMyHostedService(databaseEnvironment);
             services.AddTransient<IEmailSender, FakeEmailSender>();
+            services.AddScoped<OperationFilterAttribute>();
         }
 
         public void Configure(IApplicationBuilder app, IHostEnvironment env)

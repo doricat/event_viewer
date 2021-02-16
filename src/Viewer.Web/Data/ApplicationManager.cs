@@ -10,15 +10,18 @@ namespace Viewer.Web.Data
 {
     public class ApplicationManager
     {
-        public ApplicationManager(IApplicationStore store, IHttpContextAccessor httpContextAccessor)
+        public ApplicationManager(IApplicationStore store, IApplicationEventQueries queries, IHttpContextAccessor httpContextAccessor)
         {
             Store = store ?? throw new ArgumentNullException(nameof(store));
+            Queries = queries;
             HttpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public IApplicationStore Store { get; }
 
         public IHttpContextAccessor HttpContextAccessor { get; }
+
+        public IApplicationEventQueries Queries { get; }
 
         protected CancellationToken CancellationToken => HttpContextAccessor.HttpContext.RequestAborted;
 
@@ -72,7 +75,7 @@ namespace Viewer.Web.Data
 
         public async Task<EventStatisticsResult> GetEventStatisticsAsync(Application app, string level)
         {
-            return await GetEventStore().CountEventAsync(app, level, CancellationToken);
+            return await Queries.CountEventAsync(app, level, CancellationToken);
         }
 
         private IApplicationDetailStore GetDetailStore()

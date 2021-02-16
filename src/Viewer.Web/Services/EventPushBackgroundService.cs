@@ -71,7 +71,7 @@ namespace Viewer.Web.Services
                     GlobalId = id,
                     ApplicationId = applicationId,
                     Category = item.Category,
-                    Level = item.Level,
+                    Level = item.Level.ToLower(),
                     EventId = item.EventId,
                     EventType = item.EventType,
                     Message = item.Message,
