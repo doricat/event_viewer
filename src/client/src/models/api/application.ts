@@ -21,4 +21,8 @@ export interface EventStatisticsGetModel {
     last1Hour: number;
     last24Hours: number;
     last7Days: number;
+    oneHourAgo: string;
+    oneDayAgo: string;
+    sevenDaysAgo: string;
+    endTime: string;
 }

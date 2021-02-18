@@ -1,7 +1,8 @@
-import { action, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 import { VerifiableProperty } from "../../infrastructure/validation";
 import { createMaxLength, createRegularExpression, createRequired, createMinLength } from '../../infrastructure/validators';
 import { ApplicationEditionModel } from "../api/application";
+import { ApiError } from '../apiResult';
 
 export class EditionModel {
     constructor(application?: ApplicationEditionModel) {
@@ -33,7 +34,8 @@ export class EditionModel {
             applicationId: observable,
             description: observable,
             enabled: observable,
-            setApiValidationResult: action
+            setApiValidationResult: action,
+            validate: action
         });
     }
 
@@ -42,8 +44,32 @@ export class EditionModel {
     description: VerifiableProperty<string | undefined>;
     enabled: boolean;
 
-    setApiValidationResult(): void {
+    setApiValidationResult(apiError: ApiError): void {
+        if (apiError.details === undefined) {
+            return;
+        }
 
+        for (const error of apiError.details) {
+            if (error.target && error.target === 'name') {
+                this.name.validationResult.push(error.message);
+            } else if (error.target && error.target === 'applicationId') {
+                this.applicationId.validationResult.push(error.message);
+            } else if (error.target && error.target === 'description') {
+                this.description.validationResult.push(error.message);
+            }
+        }
+    }
+
+    validate(): boolean {
+        runInAction(() => {
+            this.name.validate();
+            this.applicationId.validate();
+            this.description.validate();
+        });
+
+        return !(this.name.invalid
+            || this.applicationId.invalid
+            || this.description.invalid);
     }
 
     toApiModel(): ApplicationEditionModel {
