@@ -8,15 +8,23 @@ import { EventGetModel } from "../api/event";
 import { EventLevel } from "../shared";
 
 export class EventStatistics {
-    last1Hour!: number;
-    last24Hours!: number;
-    last7Days!: number;
+    last1Hour = 0;
+    last24Hours = 0;
+    last7Days = 0;
+    oneHourAgo = '';
+    oneDayAgo = '';
+    sevenDaysAgo = '';
+    endTime = '';
 
     static formApiModel(model: EventStatisticsGetModel): EventStatistics {
         const o = new EventStatistics();
         o.last1Hour = model.last1Hour;
         o.last24Hours = model.last24Hours;
         o.last7Days = model.last7Days;
+        o.oneHourAgo = model.oneHourAgo;
+        o.oneDayAgo = model.oneDayAgo;
+        o.sevenDaysAgo = model.sevenDaysAgo;
+        o.endTime = model.endTime;
         return o;
     }
 }
@@ -29,7 +37,16 @@ export class Application {
     enabled!: boolean;
     events?: number;
     subscribers: number[] = [];
-    eventStatistics?: Map<EventLevel, EventStatistics>;
+    eventStatistics: Map<EventLevel, EventStatistics> = new Map(
+        [
+            ['critical', new EventStatistics()],
+            ['error', new EventStatistics()],
+            ['warning', new EventStatistics()],
+            ['information', new EventStatistics()],
+            ['debug', new EventStatistics()],
+            ['trace', new EventStatistics()]
+        ]
+    );
 
     static fromApiModel(model: ApplicationGetModel): Application {
         const application = new Application();
@@ -70,17 +87,19 @@ export class Application {
 }
 
 export class ApplicationEvent {
+    id!: number;
     applicationId!: number;
     category!: string;
-    level!: string;
+    level!: EventLevel;
     message!: string;
     timestamp!: Date;
 
     static fromApiModel(model: EventGetModel): ApplicationEvent {
         const o = new ApplicationEvent();
+        o.id = model.id;
         o.applicationId = model.applicationId;
         o.category = model.category;
-        o.level = model.level;
+        o.level = model.level as EventLevel;
         o.message = model.message;
         o.timestamp = model.timestamp;
         return o;

@@ -1,3 +1,5 @@
+import { ApiError, ApiErrorResult, ApiResult } from "../apiResult";
+
 export interface HttpErrorMessage {
     serviceName: string;
     operation: string;
@@ -27,9 +29,23 @@ export class ErrorMessage {
     getMessage(): string {
         const contentType = this.headers.get('content-type') || '';
         if (contentType.startsWith('application/json')) {
-            return `server returned code ${this.httpStatus}`;
+            if (this.httpStatus >= 200 && this.httpStatus < 300) {
+                const result = this.data as ApiResult<ApiError>;
+                return result.value.message;
+            }
+
+            const apiError = this.data as ApiErrorResult<ApiError>;
+            return apiError.error.message;
         }
 
-        return `server returned content ${contentType}`;
+        return `server returned content type ${contentType}`;
+    }
+
+    getServerValidationResult(): ApiError | undefined {
+        if (this.httpStatus !== 400) {
+            return undefined;
+        }
+
+        return (this.data as ApiErrorResult<ApiError>).error;
     }
 }
