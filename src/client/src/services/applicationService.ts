@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { buildJsonContentRequestHeader, buildRequestHeader } from '../infrastructure/httpHelper';
 import { HttpErrorHandler } from './httpErrorHandlerService';
-import { ApiResult, CreatedResult } from '../models/apiResult';
+import { ApiResult, CreatedResult, PagedResult } from '../models/apiResult';
 import { HttpClient } from '../infrastructure/httpClient';
 import { HandleError } from '../infrastructure/httpResponseHandler';
 import { httpErrorMessageService } from './httpErrorMessageService';
@@ -61,8 +61,8 @@ export class ApplicationService {
             .pipe(catchError(this.handleError(this.getEventStatistics.name, traceId, null)));
     }
 
-    getEventDetails(applicationId: number, filter: FilterDTO, top: number, accessToken: string, traceId: number): Observable<ApiResult<EventGetModel[]> | null> {
-        return this.http.get<ApiResult<EventGetModel[]>>(`/api/applications/${applicationId}/events?$filter=${this.buildFilter(filter)}&$top=${top}&$skip=${filter.skip}`,
+    getEventDetails(applicationId: number, filter: FilterDTO, top: number, accessToken: string, traceId: number): Observable<PagedResult<EventGetModel[]> | null> {
+        return this.http.get<PagedResult<EventGetModel[]>>(`/api/applications/${applicationId}/events?$filter=${this.buildFilter(filter)}&$top=${top}&$skip=${filter.skip}`,
             buildRequestHeader(accessToken)).pipe(catchError(this.handleError(this.getEventDetails.name, traceId, null)));
     }
 
@@ -85,7 +85,7 @@ export class ApplicationService {
 }
 
 export interface FilterDTO {
-    level?: EventLevel,
+    level?: EventLevel;
     startTime?: Date;
     endTime?: Date;
     skip: number;
