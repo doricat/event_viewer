@@ -1,4 +1,4 @@
-import { ApiError, ApiErrorResult, ApiResult } from "../apiResult";
+import { ApiError, ApiErrorResult } from "../apiResult";
 
 export interface HttpErrorMessage {
     serviceName: string;
@@ -26,19 +26,13 @@ export class ErrorMessage {
         return error;
     }
 
-    getMessage(): string {
-        const contentType = this.headers.get('content-type') || '';
-        if (contentType.startsWith('application/json')) {
-            if (this.httpStatus >= 200 && this.httpStatus < 300) {
-                const result = this.data as ApiResult<ApiError>;
-                return result.value.message;
-            }
-
+    getMessage(): string | undefined {
+        if (this.isJsonResult && this.httpStatus >= 400) {
             const apiError = this.data as ApiErrorResult<ApiError>;
             return apiError.error.message;
         }
 
-        return `server returned content type ${contentType}`;
+        return undefined;
     }
 
     getServerValidationResult(): ApiError | undefined {
@@ -47,5 +41,22 @@ export class ErrorMessage {
         }
 
         return (this.data as ApiErrorResult<ApiError>).error;
+    }
+
+    public get isServerSideException(): boolean {
+        return this.httpStatus >= 500;
+    }
+
+    public get isUnauthorized(): boolean {
+        return this.httpStatus === 403;
+    }
+
+    public get isUnauthenticated(): boolean {
+        return this.httpStatus === 401;
+    }
+
+    public get isJsonResult(): boolean {
+        const contentType = this.headers.get('content-type') || '';
+        return contentType.startsWith('application/json');
     }
 }

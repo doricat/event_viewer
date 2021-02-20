@@ -6,15 +6,31 @@ import { HttpErrorMessageService } from "../services/httpErrorMessageService";
 class Store {
     constructor(private errors: HttpErrorMessageService) {
         this.subscription = this.errors.get().subscribe((message: HttpErrorMessage) => {
-            this.messages.set(message.eventId, ErrorMessage.fromMessage(message));
+            const errorMessage = ErrorMessage.fromMessage(message);
+            if (errorMessage.isServerSideException) {
+                this.exceptionMessage.push(errorMessage);
+            } else if (errorMessage.isUnauthorized) {
+                this.unauthorizedMessage.push(errorMessage);
+            } else if (errorMessage.isUnauthenticated) {
+                this.unauthenticatedMessage.push(errorMessage);
+            } else {
+                this.operationFailedMessage.set(message.eventId, errorMessage);
+            }
         });
+
         makeObservable(this, {
-            messages: observable
+            exceptionMessage: observable,
+            unauthorizedMessage: observable,
+            unauthenticatedMessage: observable,
+            operationFailedMessage: observable
         });
     }
 
     private subscription: Subscription;
-    messages: Map<number, ErrorMessage> = new Map();
+    exceptionMessage: ErrorMessage[] = [];
+    unauthorizedMessage: ErrorMessage[] = [];
+    unauthenticatedMessage: ErrorMessage[] = [];
+    operationFailedMessage: Map<number, ErrorMessage> = new Map();
 }
 
 export { Store as ErrorStore };
