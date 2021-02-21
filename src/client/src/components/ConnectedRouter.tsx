@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useMemo } from 'react';
+import React, { useContext, useRef, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react';
 import { Router } from 'react-router';
 import { StoreContext } from '../stores';
@@ -12,13 +12,13 @@ interface Props {
 
 export const ConnectedRouter = observer((props: Props) => {
     const context = useContext(StoreContext);
-    const [inTimeTravelling, setTimeTravelling] = useState(false);
+    const inTimeTravelling = useRef(false);
 
     const handleLocationChange = (location: Location, action: string, isFirstRendering = false) => {
         if (!inTimeTravelling) {
             context.router.changeLocation(location, action, isFirstRendering)
         } else {
-            setTimeTravelling(false);
+            inTimeTravelling.current = false;
         }
     };
 
@@ -31,7 +31,7 @@ export const ConnectedRouter = observer((props: Props) => {
                 || historyLocation.hash !== storeLocation.hash
                 || !isEqualWith(storeLocation.state, historyLocation.state))
         ) {
-            setTimeTravelling(true);
+            inTimeTravelling.current = true;
             props.history.push(storeLocation);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
