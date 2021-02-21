@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react';
 import { Router } from 'react-router';
 import { StoreContext } from '../stores';
@@ -22,7 +22,7 @@ export const ConnectedRouter = observer((props: Props) => {
         }
     };
 
-    const updateLocation = () => {
+    useMemo(() => {
         const storeLocation: Location = { ...context.router.location };
         const historyLocation: Location = { ...props.history.location };
         if (props.history.action === 'PUSH'
@@ -34,7 +34,8 @@ export const ConnectedRouter = observer((props: Props) => {
             setTimeTravelling(true);
             props.history.push(storeLocation);
         }
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [context.router.location]);
 
     useEffect(() => {
         const callback = props.history.listen(handleLocationChange);
@@ -43,8 +44,6 @@ export const ConnectedRouter = observer((props: Props) => {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    updateLocation();
 
     return (
         <Router history={props.history}>
