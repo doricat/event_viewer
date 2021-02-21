@@ -64,7 +64,10 @@ export const EditionForm = observer((props: Props) => {
         }
 
         if (requestState?.success) {
-            context.router.push(`/application/${context.application.creationResult?.id}`);
+            // context.router.push(''); BUG: Cannot update during an existing state transition
+            setTimeout(() => {
+                context.router.push(`/application/${context.application.creationResult?.id}`);
+            }, 500);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [requestState?.state]);
