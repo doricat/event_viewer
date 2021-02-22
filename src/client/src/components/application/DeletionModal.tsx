@@ -37,7 +37,9 @@ export const DeletionModal = observer((props: Props) => {
         }
 
         if (requestState?.success) {
-            context.router.push(`/application`);
+            setTimeout(() => {
+                context.router.push(`/application`);
+            }, 500);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [requestState?.state]);
