@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { Modal, Button } from 'react-bootstrap';
 import { StoreContext } from '../../stores';
@@ -26,7 +26,7 @@ export const DeletionModal = observer((props: Props) => {
     };
 
     const requestState = context.ui.requestStates.get(traceId);
-    useMemo(() => {
+    useEffect(() => {
         if (requestState?.completed) {
             setShow(true);
         }
@@ -38,8 +38,9 @@ export const DeletionModal = observer((props: Props) => {
 
         if (requestState?.success) {
             setTimeout(() => {
-                context.router.push(`/application`);
-            }, 500);
+                context.router.push('/application');
+                context.application.removeApplication(props.applicationId);
+            }, 1000);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [requestState?.state]);
