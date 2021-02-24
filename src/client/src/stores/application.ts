@@ -5,6 +5,7 @@ import { Application, EventStatistics } from '../models/entity/application';
 import { Store as RootStore } from './index';
 import { ApplicationEditionModel } from '../models/api/application';
 import { EventLevel } from '../models/shared';
+import { CreatedResult } from '../models/apiResult';
 
 class Store {
     constructor(private rootStore: RootStore,
@@ -12,6 +13,7 @@ class Store {
         private idGenerator: IdGenerator) {
         makeObservable(this, {
             applications: observable,
+            creationResult: observable,
             loadApplications: action,
             refreshApplication: action,
             addSubscriber: action,
@@ -24,6 +26,7 @@ class Store {
     }
 
     applications: Application[] = [];
+    creationResult: CreatedResult | undefined = undefined;
 
     loadApplications(): number {
         const traceId = this.idGenerator.getNext();
@@ -122,6 +125,7 @@ class Store {
                 application.id = x.value.id;
                 application.fromApiModel(model);
                 this.applications.push(application);
+                this.creationResult = x.value;
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
         });
@@ -161,8 +165,9 @@ class Store {
 
             runInAction(() => {
                 const index = this.applications.findIndex(x => x.id === applicationId);
-                if (index === -1) return;
-                this.applications.splice(index, 1);
+                if (index !== -1) {
+                    this.applications[index].removed = true;
+                }
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
         });
@@ -177,6 +182,13 @@ class Store {
         }
 
         return this.applications[index];
+    }
+
+    removeApplication(applicationId: number): void {
+        const index = this.applications.findIndex(x => x.id === applicationId);
+        if (index !== -1) {
+            this.applications.splice(index, 1);
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { Form, Button } from 'react-bootstrap';
 import { StoreContext } from '../../stores';
@@ -48,7 +48,7 @@ export const EditionForm = observer((props: Props) => {
     const title = props.applicationId !== undefined ? "编辑一个应用程序" : "创建一个新应用程序";
     const requestState = context.ui.requestStates.get(traceId);
 
-    useMemo(() => {
+    useEffect(() => {
         if (requestState?.completed) {
             setShow(true);
         }
@@ -64,7 +64,10 @@ export const EditionForm = observer((props: Props) => {
         }
 
         if (requestState?.success) {
-            context.router.push(`/application/${context.application.creationResult?.id}`);
+            // context.router.push(''); BUG: Cannot update during an existing state transition
+            setTimeout(() => {
+                context.router.push(`/application/${context.application.creationResult?.id}`);
+            }, 1000);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [requestState?.state]);

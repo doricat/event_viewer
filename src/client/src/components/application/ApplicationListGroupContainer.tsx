@@ -22,7 +22,11 @@ export const ApplicationListGroupContainer = observer(() => {
 
     if (requestState?.success) {
         const applications: [number, string][] = [];
-        context.application.applications.map(x => applications.push([x.id, x.name]));
+        context.application.applications
+            .slice()
+            .filter(x => x.removed === false)
+            .sort(x => x.id)
+            .map(x => applications.push([x.id, x.name]));
         return (<ApplicationListGroup applications={applications} />);
     }
 
