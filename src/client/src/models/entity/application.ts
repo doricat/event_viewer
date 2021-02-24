@@ -1,3 +1,4 @@
+import { makeObservable, observable } from "mobx";
 import {
     ApplicationEditionModel,
     ApplicationDetailGetModel,
@@ -30,6 +31,12 @@ export class EventStatistics {
 }
 
 export class Application {
+    constructor() {
+        makeObservable(this, {
+            removed: observable
+        });
+    }
+
     id!: number;
     name!: string;
     applicationId!: string;
@@ -47,6 +54,7 @@ export class Application {
             ['trace', new EventStatistics()]
         ]
     );
+    removed = false;
 
     static fromApiModel(model: ApplicationGetModel): Application {
         const application = new Application();

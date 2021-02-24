@@ -165,8 +165,9 @@ class Store {
 
             runInAction(() => {
                 const index = this.applications.findIndex(x => x.id === applicationId);
-                if (index === -1) return;
-                this.applications.splice(index, 1);
+                if (index !== -1) {
+                    this.applications[index].removed = true;
+                }
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
         });
@@ -181,6 +182,13 @@ class Store {
         }
 
         return this.applications[index];
+    }
+
+    removeApplication(applicationId: number): void {
+        const index = this.applications.findIndex(x => x.id === applicationId);
+        if (index !== -1) {
+            this.applications.splice(index, 1);
+        }
     }
 }
 
