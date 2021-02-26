@@ -1,5 +1,3 @@
-import { makeObservable, observable } from "mobx";
-
 export type EventLevel = 'critical' | 'error' | 'warning' | 'information' | 'debug' | 'trace';
 export type RequestStateType = 'waiting' | 'success' | 'failed';
 
