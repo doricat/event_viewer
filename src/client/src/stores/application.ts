@@ -18,7 +18,7 @@ class Store {
             refreshApplication: action,
             addSubscriber: action,
             removeSubscriber: action,
-            pushSubscribers: action,
+            saveSubscribers: action,
             createApplication: action,
             replaceApplication: action,
             deleteApplication: action
@@ -94,14 +94,15 @@ class Store {
         this.getApplication(applicationId).removeSubscriber(userId);
     }
 
-    pushSubscribers(applicationId: number): number {
+    saveSubscribers(applicationId: number, subscribers: number[]): number {
         const traceId = this.idGenerator.getNext();
         this.rootStore.ui.setRequestWaiting(traceId);
-        const application = this.getApplication(applicationId);
         const accessToken = this.rootStore.account.accessToken;
-        this.service.saveSubscribers(applicationId, application.subscribers, accessToken, traceId).subscribe(x => {
+        this.service.saveSubscribers(applicationId, subscribers, accessToken, traceId).subscribe(x => {
             if (x) {
                 this.rootStore.ui.setRequestSuccess(traceId);
+                const application = this.getApplication(applicationId);
+                application.subscribers = subscribers;
             } else {
                 this.rootStore.ui.setRequestFailed(traceId);
             }
