@@ -1,12 +1,13 @@
 import React from 'react'
 import { Alert } from 'react-bootstrap'
+import { NormalLayout } from '../components/shared/NormalLayout';
 
-function NotFound() {
+export function NotFound() {
     return (
-        <Alert variant="info">
-            你迷路了
-        </Alert>
+        <NormalLayout>
+            <Alert variant="info">
+                你迷路了
+            </Alert>
+        </NormalLayout>
     );
 }
-
-export { NotFound };

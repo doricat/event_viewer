@@ -1,12 +1,13 @@
 import React from 'react';
 import { Alert } from 'react-bootstrap';
+import { NormalLayout } from '../components/shared/NormalLayout';
 
-function Profile() {
+export function Profile() {
     return (
-        <Alert variant="info">
-            建设中
-        </Alert>
+        <NormalLayout>
+            <Alert variant="info">
+                建设中
+            </Alert>
+        </NormalLayout>
     );
 }
-
-export { Profile };

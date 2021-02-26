@@ -1,19 +1,13 @@
 import React from 'react';
 import { Alert } from 'react-bootstrap';
-import { Helmet } from 'react-helmet';
+import { NormalLayout } from '../components/shared/NormalLayout';
 
-function Home() {
+export function Home() {
     return (
-        <>
-            <Helmet>
-                <title>Home</title>
-            </Helmet>
-
+        <NormalLayout>
             <Alert variant="info">
                 Event Viewer
             </Alert>
-        </>
+        </NormalLayout>
     );
 }
-
-export { Home };
