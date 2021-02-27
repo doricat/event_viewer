@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useEffect, useMemo } from 'react';
+import React, { useContext, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { Router } from 'react-router';
 import { StoreContext } from '../stores';
@@ -22,7 +22,7 @@ export const ConnectedRouter = observer((props: Props) => {
         }
     };
 
-    useMemo(() => {
+    useEffect(() => {
         const storeLocation: Location = { ...context.router.location };
         const historyLocation: Location = { ...props.history.location };
         if (props.history.action === 'PUSH'
