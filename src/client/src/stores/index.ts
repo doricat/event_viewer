@@ -10,6 +10,9 @@ import { authorizeService } from '../services/authorizeService';
 import { RouterStore } from './router';
 import { createBrowserHistory } from 'history';
 import { UIStore } from './ui';
+import { UserStore } from './user';
+import { userService } from '../services/userService';
+import { EventStore } from './event';
 
 export const history = createBrowserHistory();
 
@@ -20,6 +23,8 @@ export class Store {
         this.account = new AccountStore(this, authorizeService, accountService, idGenerator);
         this.router = new RouterStore(history);
         this.ui = new UIStore();
+        this.user = new UserStore(this, userService, idGenerator);
+        this.event = new EventStore(this, applicationService, idGenerator);
     }
 
     error: ErrorStore;
@@ -27,6 +32,8 @@ export class Store {
     account: AccountStore;
     router: RouterStore;
     ui: UIStore;
+    user: UserStore;
+    event: EventStore;
 }
 
 export const store = new Store();
