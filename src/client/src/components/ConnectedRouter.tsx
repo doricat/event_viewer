@@ -16,7 +16,7 @@ export const ConnectedRouter = observer((props: Props) => {
 
     const handleLocationChange = (location: Location, action: string, isFirstRendering = false) => {
         if (!inTimeTravelling.current) {
-            context.router.changeLocation(location, action, isFirstRendering)
+            context.router.changeLocation(location, action, isFirstRendering);
         } else {
             inTimeTravelling.current = false;
         }

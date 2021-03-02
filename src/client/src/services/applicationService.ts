@@ -61,8 +61,8 @@ export class ApplicationService {
             .pipe(catchError(this.handleError(this.getEventStatistics.name, traceId, null)));
     }
 
-    getEventDetails(applicationId: number, filter: FilterDTO, top: number, accessToken: string, traceId: number): Observable<PagedResult<EventGetModel[]> | null> {
-        return this.http.get<PagedResult<EventGetModel[]>>(`/api/applications/${applicationId}/events?$filter=${this.buildFilter(filter)}&$top=${top}&$skip=${filter.skip}`,
+    getEventDetails(applicationId: number, filter: FilterDTO, top: number, skip: number, accessToken: string, traceId: number): Observable<PagedResult<EventGetModel[]> | null> {
+        return this.http.get<PagedResult<EventGetModel[]>>(`/api/applications/${applicationId}/events?$filter=${this.buildFilter(filter)}&$top=${top}&$skip=${skip}`,
             buildRequestHeader(accessToken)).pipe(catchError(this.handleError(this.getEventDetails.name, traceId, null)));
     }
 
@@ -88,7 +88,6 @@ export interface FilterDTO {
     level?: EventLevel;
     startTime?: Date;
     endTime?: Date;
-    skip: number;
 }
 
 export const applicationService = new ApplicationService(new HttpErrorHandler(httpErrorMessageService));

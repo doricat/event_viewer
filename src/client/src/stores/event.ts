@@ -19,7 +19,7 @@ class Store {
     events: ApplicationEvent[] = [];
     count?: number;
 
-    loadEvents(applicationId: number, filter: { level?: EventLevel; startTime?: Date; endTime?: Date; }, top: number): number {
+    loadEvents(applicationId: number, filter: { level?: EventLevel; startTime?: Date; endTime?: Date; }, top: number, skip: number): number {
         const traceId = this.idGenerator.getNext();
         this.rootStore.ui.setRequestWaiting(traceId);
         const accessToken = this.rootStore.account.accessToken;
@@ -27,8 +27,7 @@ class Store {
             level: filter.level,
             startTime: filter.startTime,
             endTime: filter.endTime,
-            skip: this.events.length
-        }, top, accessToken, traceId).subscribe(x => {
+        }, top, skip, accessToken, traceId).subscribe(x => {
             if (x == null) {
                 this.rootStore.ui.setRequestFailed(traceId);
                 return;
