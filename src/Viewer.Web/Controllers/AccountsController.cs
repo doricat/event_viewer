@@ -52,7 +52,9 @@ namespace Viewer.Web.Controllers
         public async Task<IActionResult> Patch([FromRoute] string id, [FromForm] UserPatchAvatarInputModel model)
         {
             var user = await _userManager.FindByEmailAsync(User.Identity.Name);
-            var fileId = await _fileManager.CreateFileAsync(await model.File.ResizeFile(180), model.File.ContentType, model.File.FileName);
+            var image = await model.File.ResizeFile(180);
+            var fileId = await _fileManager.CreateFileAsync(image, model.File.ContentType, model.File.FileName);
+            await image.DisposeAsync();
             user.AvatarId = fileId;
             await _userManager.UpdateAsync(user);
             return Ok(new ApiResult<string>($"/api/files/{user.AvatarId}"));

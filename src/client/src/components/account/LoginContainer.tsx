@@ -19,14 +19,14 @@ export const LoginContainer = observer((props: Props) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const requestState = context.ui.requestStates.get(traceId);
+    const state = context.ui.requestStates.get(traceId);
 
-    if (requestState === 'success') {
+    if (state?.success) {
         return React.createElement(props.component);
     }
 
-    if (requestState === 'failed') {
-        return (<span>{context.error.messages.get(traceId)?.getMessage()}</span>)
+    if (state?.failed) {
+        return (<span>{context.error.operationFailedMessage.get(traceId)?.getMessage()}</span>)
     }
 
     return (<span>Processing</span>);

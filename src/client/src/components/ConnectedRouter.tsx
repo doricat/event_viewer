@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useEffect, useMemo } from 'react';
+import React, { useContext, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { Router } from 'react-router';
 import { StoreContext } from '../stores';
@@ -15,14 +15,14 @@ export const ConnectedRouter = observer((props: Props) => {
     const inTimeTravelling = useRef(false);
 
     const handleLocationChange = (location: Location, action: string, isFirstRendering = false) => {
-        if (!inTimeTravelling) {
-            context.router.changeLocation(location, action, isFirstRendering)
+        if (!inTimeTravelling.current) {
+            context.router.changeLocation(location, action, isFirstRendering);
         } else {
             inTimeTravelling.current = false;
         }
     };
 
-    useMemo(() => {
+    useEffect(() => {
         const storeLocation: Location = { ...context.router.location };
         const historyLocation: Location = { ...props.history.location };
         if (props.history.action === 'PUSH'

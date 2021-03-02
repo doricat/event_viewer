@@ -1,17 +1,17 @@
-import { AccountGetModel } from "../api/account";
+import { UserGetModel } from "../api/user";
 
-export class Account {
+export class User {
     id!: number;
     name!: string;
     email!: string;
     avatar!: string;
 
-    public static fromApiModel(model: AccountGetModel): Account {
-        const account = new Account();
-        account.id = model.id;
-        account.name = model.name;
-        account.email = model.email;
-        account.avatar = model.avatar;
-        return account;
+    public static fromApiModel(model: UserGetModel): User {
+        const o = new User();
+        o.id = model.id;
+        o.name = model.name;
+        o.email = model.email;
+        o.avatar = model.avatar;
+        return o;
     }
 }

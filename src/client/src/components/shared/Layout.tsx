@@ -1,4 +1,5 @@
 import React from 'react';
+import { ErrorModal } from './ErrorModal';
 import { NavMenu } from './NavMenu';
 
 interface Props {
@@ -10,6 +11,7 @@ export function Layout(props: Props) {
         <>
             <NavMenu />
             {props.children}
+            <ErrorModal />
         </>
     );
 }

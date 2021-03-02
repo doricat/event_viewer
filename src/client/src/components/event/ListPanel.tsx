@@ -1,0 +1,47 @@
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { observer } from 'mobx-react';
+import { Row, Col } from 'react-bootstrap';
+import { StoreContext } from '../../stores';
+import { EventFilter } from './Filter';
+import { EventList } from './List';
+import { FilterModel } from '../../models/view/event';
+
+export const ListPanel = observer((props: { applicationId: number }) => {
+    const context = useContext(StoreContext);
+    const [filter] = useState<FilterModel>(() => new FilterModel('all'));
+    const firstRender = useRef(true);
+
+    const loadEvents = () => {
+        context.event.loadEvents(props.applicationId, filter.toFilter(), filter.top, filter.skip);
+    };
+
+    useEffect(() => {
+        if (firstRender.current) {
+            filter.update(context.router.query);
+        } else {
+            loadEvents();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [context.router.location]);
+
+    useEffect(() => {
+        context.router.push(filter.toQuery(props.applicationId));
+        firstRender.current = false;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filter.level, filter.startTime, filter.endTime, filter.top, filter.skip]);
+
+    return (
+        <>
+            <Row>
+                <Col md={12}>
+                    <EventFilter key={props.applicationId.toString()} model={filter} requestState={undefined} loadEvents={loadEvents} />
+                </Col>
+            </Row>
+            <Row>
+                <Col md={12}>
+                    <EventList key={props.applicationId.toString()} model={filter} />
+                </Col>
+            </Row>
+        </>
+    );
+});

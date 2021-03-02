@@ -1,12 +1,15 @@
 import React from 'react';
-import './App.css';
+import { ConnectedRouter } from './components/ConnectedRouter';
+import { Layout } from './components/shared/Layout';
+import { Routes } from './routes/Index';
+import { history } from './stores';
 
-function App() {
+export function App() {
     return (
-        <div className="App">
-
-        </div>
+        <ConnectedRouter history={history}>
+            <Layout>
+                <Routes />
+            </Layout>
+        </ConnectedRouter>
     );
 }
-
-export default App;
