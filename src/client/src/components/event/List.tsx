@@ -50,6 +50,11 @@ export const EventList = observer((props: { model: FilterModel; }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [context.event.events.length]);
 
+    useEffect(() => {
+        setList([]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.model.level, props.model.startTime, props.model.endTime]);
+
     let message: string | undefined = undefined;
     if (list.length === 0) {
         message = '暂无数据';

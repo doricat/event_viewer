@@ -14,7 +14,7 @@ interface Props {
 }
 
 export const EventFilter = observer((props: Props) => {
-    const { model, requestState, loadEvents } = props;
+    const { model, requestState } = props;
 
     return (
         <InputGroup className="mb-3">
@@ -56,7 +56,7 @@ export const EventFilter = observer((props: Props) => {
                 selected={model.endTime}
                 disabled={requestState?.waiting}
                 onChange={(x) => model.endTime = x === null ? undefined : (x as Date)} />
-            <Button disabled={requestState?.waiting} onClick={() => loadEvents()}>查询</Button>
+            {/* <Button disabled={requestState?.waiting} onClick={() => loadEvents()}>查询</Button> */}
         </InputGroup>
     );
 });

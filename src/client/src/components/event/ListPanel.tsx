@@ -9,10 +9,11 @@ import { FilterModel } from '../../models/view/event';
 export const ListPanel = observer((props: { applicationId: number }) => {
     const context = useContext(StoreContext);
     const [filter] = useState<FilterModel>(() => new FilterModel('all'));
+    const [traceId, setTraceId] = useState(-1);
     const firstRender = useRef(true);
 
     const loadEvents = () => {
-        context.event.loadEvents(props.applicationId, filter.toFilter(), filter.top, filter.skip);
+        setTraceId(context.event.loadEvents(props.applicationId, filter.toFilter(), filter.top, filter.skip));
     };
 
     useEffect(() => {
@@ -30,11 +31,13 @@ export const ListPanel = observer((props: { applicationId: number }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter.level, filter.startTime, filter.endTime, filter.top, filter.skip]);
 
+    const requestState = context.ui.requestStates.get(traceId);
+
     return (
         <>
             <Row>
                 <Col md={12}>
-                    <EventFilter key={props.applicationId.toString()} model={filter} requestState={undefined} loadEvents={loadEvents} />
+                    <EventFilter key={props.applicationId.toString()} model={filter} requestState={requestState} loadEvents={loadEvents} />
                 </Col>
             </Row>
             <Row>
