@@ -18,7 +18,7 @@ export const ListPanel = observer((props: { applicationId: number }) => {
 
     useEffect(() => {
         if (firstRender.current) {
-            filter.update(context.router.query);
+            filter.update(context.router.location.search);
         } else {
             loadEvents();
         }
@@ -26,7 +26,10 @@ export const ListPanel = observer((props: { applicationId: number }) => {
     }, [context.router.location]);
 
     useEffect(() => {
-        context.router.push(filter.toQuery(props.applicationId));
+        if (!firstRender.current) {
+            context.router.push(filter.toQuery(props.applicationId));
+        }
+
         firstRender.current = false;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter.level, filter.startTime, filter.endTime, filter.top, filter.skip]);
