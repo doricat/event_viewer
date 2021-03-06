@@ -12,12 +12,8 @@ export function ApplicationListGroup(props: { path: string; applications: [numbe
                         children={y => {
                             const params = new URLSearchParams(y.location.search);
                             const active = params.get('application') === id.toString();
-                            return (
-                                <Link to={{ pathname: props.path, search: `?application=${id}` }}
-                                    className={active
-                                        ? 'list-group-item list-group-item-action active'
-                                        : 'list-group-item list-group-item-action'}>{name}</Link>
-                            );
+                            const className = 'list-group-item list-group-item-action' + (active ? ' active' : '');
+                            return (<Link to={{ pathname: props.path, search: `?application=${id}` }} className={className}>{name}</Link>);
                         }}
                     />
                 );

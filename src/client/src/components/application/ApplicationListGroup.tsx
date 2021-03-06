@@ -15,12 +15,10 @@ export function ApplicationListGroup(props: Props) {
                 return (
                     <Route key={id.toString()}
                         path={path}
-                        children={y => (
-                            <Link to={path}
-                                className={y.match
-                                    ? 'list-group-item list-group-item-action active'
-                                    : 'list-group-item list-group-item-action'}>{name}</Link>
-                        )}
+                        children={y => {
+                            const className = 'list-group-item list-group-item-action' + (y.match ? ' active' : '');
+                            return (<Link to={path} className={className}>{name}</Link>);
+                        }}
                     />
                 );
             })}
