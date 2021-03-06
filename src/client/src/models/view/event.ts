@@ -34,7 +34,7 @@ export class FilterModel {
         this.startTime = startTime ? new Date(decodeURIComponent(startTime)) : undefined;
         this.endTime = endTime ? new Date(decodeURIComponent(endTime)) : undefined;
         this.top = top ? Number(top) : 20;
-        this.skip =  skip ? Number(skip) : 0;
+        this.skip = skip ? Number(skip) : 0;
     }
 
     toFilter() {
@@ -68,4 +68,12 @@ export class FilterModel {
 
         return `/event/list?${queries.join('&')}`;
     }
+}
+
+export class MonitorSettings {
+    constructor() {
+        makeObservable(this, { levels: observable });
+    }
+
+    levels: EventLevel[] = ['critical', 'error', 'warning', 'information', 'debug', 'trace'];
 }
