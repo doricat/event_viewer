@@ -6,20 +6,7 @@ import { debounce } from 'rxjs/operators';
 import { observer } from 'mobx-react';
 import { StoreContext } from '../../stores';
 import { FilterModel } from '../../models/view/event';
-
-const windowScrollTop = () => {
-    return document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop;
-};
-
-const isScrolledIntoView = (elem: HTMLHeadingElement) => {
-    const docViewTop = windowScrollTop();
-    const docViewBottom = windowScrollTop() + window.innerHeight;
-
-    const elemTop = elem.offsetTop;
-    var elemBottom = elemTop + elem.clientHeight;
-
-    return (elemBottom <= docViewBottom) && (elemTop >= docViewTop);
-};
+import { isScrolledIntoView } from '../../infrastructure/domHelper';
 
 export const EventList = observer((props: { model: FilterModel; }) => {
     const context = useContext(StoreContext);
