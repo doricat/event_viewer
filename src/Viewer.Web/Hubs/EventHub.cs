@@ -7,7 +7,7 @@ using Viewer.Web.Services;
 
 namespace Viewer.Web.Hubs
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize]
     public class EventHub : Hub<IEventClient>
     {
         private readonly IMonitorSettingsUpdatingQueue _monitorSettingsUpdatingQueue;

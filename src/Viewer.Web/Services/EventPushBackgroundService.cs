@@ -54,7 +54,7 @@ namespace Viewer.Web.Services
                         await _hubContext.Clients.Clients(connections.ToList()).ReceiveEvent(new EventViewModel
                         {
                             Id = id,
-                            Level = item.Level,
+                            Level = item.Level.ToLower(),
                             Category = item.Category,
                             Message = item.Message,
                             ApplicationId = applicationId,

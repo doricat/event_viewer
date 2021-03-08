@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Viewer.Web.Data;
 using Viewer.Web.Data.Entities;
 using Viewer.Web.Extensions;
@@ -31,13 +34,15 @@ namespace Viewer.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var databaseEnvironment = new MyDatabaseEnvironment(Environment.GetEnvironmentVariable("DATABASE_ENVIRONMENT"));
+            var databaseEnvironment =
+                new MyDatabaseEnvironment(Environment.GetEnvironmentVariable("DATABASE_ENVIRONMENT"));
 
             services.AddControllersWithViews(options =>
                 {
                     options.Filters.Add<ApiModelStateCheckFilterAttribute>();
                     options.Filters.Add<ApiExceptionFilterAttribute>();
-                }).ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
+                }).AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new DateTimeIsoConverter()))
+                .ConfigureApiBehaviorOptions(options => { options.SuppressModelStateInvalidFilter = true; })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddRazorPages();
 
@@ -45,25 +50,18 @@ namespace Viewer.Web
             {
                 services.AddDbContext<MyDbContext, PostgreSqlDbContext>(ServiceLifetime.Scoped);
                 services.AddIdentity<User, Role>().AddEntityFrameworkStores<PostgreSqlDbContext>();
-                services.AddIdentityServer().AddApiAuthorization<User, PostgreSqlDbContext>().AddProfileService<ProfileService>();
+                services.AddIdentityServer().AddApiAuthorization<User, PostgreSqlDbContext>()
+                    .AddProfileService<ProfileService>();
             }
             else if (databaseEnvironment.IsSQLite())
             {
                 services.AddDbContext<MyDbContext, SqliteDbContext>(ServiceLifetime.Scoped);
                 services.AddIdentity<User, Role>().AddEntityFrameworkStores<SqliteDbContext>();
-                services.AddIdentityServer().AddApiAuthorization<User, SqliteDbContext>().AddProfileService<ProfileService>();
+                services.AddIdentityServer().AddApiAuthorization<User, SqliteDbContext>()
+                    .AddProfileService<ProfileService>();
             }
 
-            services.AddAuthentication().AddIdentityServerJwt().AddJwtBearer(options =>
-            {
-                options.Events.OnAuthenticationFailed = context =>
-                {
-                    context.Response.StatusCode = 401;
-                    return Task.CompletedTask;
-                };
-
-                options.Events.OnForbidden = context => Task.CompletedTask;
-            });
+            services.AddAuthentication().AddIdentityServerJwt().AddJwtBearer();
 
             services.AddMemoryCache();
             services.AddSignalR();
@@ -72,9 +70,11 @@ namespace Viewer.Web
             services.AddScoped<EntityErrorDescriber>();
 
             services.Configure<IdentityGeneratorOptions>(x => x.InstanceTag = 1);
-            services.Configure<LocalFileStorageServiceOptions>(x => x.RootDirectory = Configuration.GetValue<string>("FileUploadRootDirectory"));
+            services.Configure<LocalFileStorageServiceOptions>(x =>
+                x.RootDirectory = Configuration.GetValue<string>("FileUploadRootDirectory"));
             services.Configure<ApplicationSettings>(x => Configuration.GetSection("ApplicationSettings").Bind(x));
-            services.Configure<ApplicationEnvironment>(environment => environment.DatabaseEnvironment = databaseEnvironment);
+            services.Configure<ApplicationEnvironment>(environment =>
+                environment.DatabaseEnvironment = databaseEnvironment);
 
             services.AddStores(databaseEnvironment).AddManagers();
             services.AddMyHostedService(databaseEnvironment);
