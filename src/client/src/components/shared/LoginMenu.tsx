@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { StoreContext } from '../../stores';
 import { NavDropdown, Nav } from 'react-bootstrap';
@@ -19,8 +19,10 @@ export const LoginMenu = observer(() => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useMemo(() => context.account.loadProfile(), [isAuthenticated]);
+    useEffect(() => {
+        context.account.loadProfile();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthenticated]);
 
     if (isAuthenticated) {
         return (
