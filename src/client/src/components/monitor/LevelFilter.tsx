@@ -6,7 +6,7 @@ import { getStyle } from '../event/styleMapping';
 
 const levels: EventLevel[] = ['critical', 'error', 'warning', 'information', 'debug', 'trace'];
 
-export const LevelFilter = observer((props: { settings: MonitorSettings }) => {
+export const LevelFilter = observer((props: { settings: MonitorSettings; }) => {
     const { settings } = props;
 
     const select = (level: EventLevel) => {
