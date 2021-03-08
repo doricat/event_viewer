@@ -11,7 +11,7 @@ import { isScrolledIntoView } from '../../infrastructure/domHelper';
 export const EventList = observer((props: { model: FilterModel; }) => {
     const context = useContext(StoreContext);
     const [list, setList] = useState<JSX.Element[]>([]);
-    const footerElement = useRef<HTMLHeadingElement>(null);
+    const footerElement = useRef<HTMLDivElement>(null);
     const count = useRef<number>(0);
 
     useEffect(() => {
