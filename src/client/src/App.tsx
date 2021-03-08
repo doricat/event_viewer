@@ -3,6 +3,7 @@ import { ConnectedRouter } from './components/ConnectedRouter';
 import { Layout } from './components/shared/Layout';
 import { Routes } from './routes/Index';
 import { history } from './stores';
+import './App.css';
 
 export function App() {
     return (
