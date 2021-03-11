@@ -39,6 +39,10 @@ export const EventBox = observer((props: Props) => {
             .build();
 
         connection.on('ReceiveEvent', (args: ApplicationEvent) => {
+            if (props.settings.levels.findIndex(x => x === args.level) === -1) {
+                return;
+            }
+
             if (model.events.length > props.maxEvents) {
                 model.events.shift();
             }
@@ -46,11 +50,16 @@ export const EventBox = observer((props: Props) => {
             model.events.push(args);
         });
 
+        connection.onclose(() => {
+            props.settings.connectionId = null;
+        });
+
         connection.start().then(() => {
             props.settings.connectionId = connection.connectionId;
         }).catch(error => console.error(error.toString()));
 
         return () => {
+            props.settings.connectionId = null;
             connection.stop();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,15 +81,16 @@ export const EventBox = observer((props: Props) => {
         }
     }, [model.events.length]);
 
-    const message: string | undefined = props.settings.connectionId == null ? '连接中...' : undefined;
-    let footer: JSX.Element | null = null;
-    if (message) {
-        footer = (
+    const message = props.settings.connectionId == null
+        ? '连接中...'
+        : (model.events.length === 0 ? '等待数据...' : undefined);
+    const footer = message !== undefined
+        ? (
             <Alert variant="success" key="-1">
                 {message}
             </Alert>
-        );
-    }
+        )
+        : null;
 
     return (
         <div>
