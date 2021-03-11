@@ -12,7 +12,6 @@ class Store {
         makeObservable(this, {
             events: observable,
             loadEvents: action,
-            clearEvent: action
         });
     }
 
@@ -48,9 +47,19 @@ class Store {
         return traceId;
     }
 
-    clearEvent(): void {
-        this.events.splice(0);
-        this.count = undefined;
+    updateMonitorSettings(connectionId: string, applicationId: number, level: string): number {
+        const traceId = this.idGenerator.getNext();
+        this.rootStore.ui.setRequestWaiting(traceId);
+        const accessToken = this.rootStore.account.accessToken;
+        this.service.updateMonitorSettings(connectionId, applicationId, level, accessToken, traceId).subscribe(x => {
+            if (x) {
+                this.rootStore.ui.setRequestSuccess(traceId);
+            } else {
+                this.rootStore.ui.setRequestFailed(traceId);
+            }
+        });
+
+        return traceId;
     }
 }
 

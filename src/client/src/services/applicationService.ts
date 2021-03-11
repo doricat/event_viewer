@@ -35,7 +35,7 @@ export class ApplicationService {
     }
 
     saveSubscribers(applicationId: number, users: number[], accessToken: string, traceId: number): Observable<boolean> {
-        return this.http.post<boolean>(`/api/applications/${applicationId}`,
+        return this.http.patch<boolean>(`/api/applications/${applicationId}`,
             buildJsonContentRequestHeader(accessToken), {
             userList: users
         }).pipe(catchError(this.handleError(this.saveSubscribers.name, traceId, false)));
@@ -64,6 +64,14 @@ export class ApplicationService {
     getEventDetails(applicationId: number, filter: FilterDTO, top: number, skip: number, accessToken: string, traceId: number): Observable<PagedResult<EventGetModel[]> | null> {
         return this.http.get<PagedResult<EventGetModel[]>>(`/api/applications/${applicationId}/events?$filter=${this.buildFilter(filter)}&$top=${top}&$skip=${skip}`,
             buildRequestHeader(accessToken)).pipe(catchError(this.handleError(this.getEventDetails.name, traceId, null)));
+    }
+
+    updateMonitorSettings(connectionId: string, applicationId: number, level: string, accessToken: string, traceId: number): Observable<boolean> {
+        return this.http.patch<boolean>(`/api/monitor_settings/${connectionId}`, buildJsonContentRequestHeader(accessToken),
+            {
+                applicationId,
+                level
+            }).pipe(catchError(this.handleError(this.updateMonitorSettings.name, traceId, false)));
     }
 
     private buildFilter(filter: FilterDTO): string {
