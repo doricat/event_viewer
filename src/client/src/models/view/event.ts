@@ -1,4 +1,4 @@
-import { makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { EventLevel } from '../shared';
 
 export class FilterModel {
@@ -72,8 +72,19 @@ export class FilterModel {
 
 export class MonitorSettings {
     constructor() {
-        makeObservable(this, { levels: observable });
+        this.resetLevels();
+
+        makeObservable(this, { 
+            levels: observable,
+            connectionId: observable,
+            resetLevels: action
+         });
     }
 
-    levels: EventLevel[] = ['critical', 'error', 'warning', 'information', 'debug', 'trace'];
+    levels!: EventLevel[];
+    connectionId: string | null = null;
+
+    resetLevels(): void {
+        this.levels = ['critical', 'error', 'warning', 'information', 'debug', 'trace'];
+    }
 }
