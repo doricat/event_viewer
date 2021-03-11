@@ -16,7 +16,7 @@ export function SummaryCard(props: Props) {
         throw new Error();
     }
 
-    const path = `/event/list`;
+    const path = '/event/list';
     const search = `?application=${props.application.id}&level=${props.level}`;
     const border = getStyle(props.level);
 
@@ -25,13 +25,13 @@ export function SummaryCard(props: Props) {
             <Card.Header>{props.level}</Card.Header>
             <ListGroup className="list-group-flush">
                 <Link className="list-group-item list-group-item-action" role="tab" tabIndex={-1}
-                    to={{ pathname: path, search: `${search}&startTime=${count.oneHourAgo}&endTime=${count.endTime}` }}>
+                    to={{ pathname: path, search: `${search}&startTime=${encodeURIComponent(count.oneHourAgo)}&endTime=${encodeURIComponent(count.endTime)}` }}>
                     近1小时：{count.last1Hour}</Link>
                 <Link className="list-group-item list-group-item-action" role="tab" tabIndex={-1}
-                    to={{ pathname: path, search: `${search}&startTime=${count.oneDayAgo}&endTime=${count.endTime}` }}>
+                    to={{ pathname: path, search: `${search}&startTime=${encodeURIComponent(count.oneDayAgo)}&endTime=${encodeURIComponent(count.endTime)}` }}>
                     24小时：{count.last24Hours}</Link>
                 <Link className="list-group-item list-group-item-action" role="tab" tabIndex={-1}
-                    to={{ pathname: path, search: `${search}&startTime=${count.sevenDaysAgo}&endTime=${count.endTime}` }}>
+                    to={{ pathname: path, search: `${search}&startTime=${encodeURIComponent(count.sevenDaysAgo)}&endTime=${encodeURIComponent(count.endTime)}` }}>
                     7天：{count.last7Days}</Link>
             </ListGroup>
         </Card>

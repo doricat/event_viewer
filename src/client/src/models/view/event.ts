@@ -1,4 +1,4 @@
-import { makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { EventLevel } from '../shared';
 
 export class FilterModel {
@@ -22,18 +22,19 @@ export class FilterModel {
     top = 20;
     skip = 0;
 
-    update(query?: Map<string, string[]>): void {
-        const level = query?.get('level');
-        const startTime = query?.get('startTime');
-        const endTime = query?.get('endTime');
-        const top = query?.get('top');
-        const skip = query?.get('skip');
+    update(search: string): void {
+        const params = new URLSearchParams(search);
+        const level = params.get('level');
+        const startTime = params.get('startTime');
+        const endTime = params.get('endTime');
+        const top = params.get('top');
+        const skip = params.get('skip');
 
-        this.level = (level && level.length > 0 ? level[0] : 'all') as EventLevel;
-        this.startTime = startTime && startTime.length > 0 ? new Date(startTime[0]) : undefined;
-        this.endTime = endTime && endTime.length > 0 ? new Date(endTime[0]) : undefined;
-        this.top = top && top.length > 0 ? Number(top[0]) : 20;
-        this.skip = skip && skip.length > 0 ? Number(skip[0]) : 0;
+        this.level = (level ?? 'all') as EventLevel;
+        this.startTime = startTime ? new Date(decodeURIComponent(startTime)) : undefined;
+        this.endTime = endTime ? new Date(decodeURIComponent(endTime)) : undefined;
+        this.top = top ? Number(top) : 20;
+        this.skip = skip ? Number(skip) : 0;
     }
 
     toFilter() {
@@ -54,13 +55,36 @@ export class FilterModel {
         }
 
         if (this.startTime !== undefined) {
-            queries.push(`startTime=${this.startTime}`);
+            const datetime = this.startTime.toISOString();
+            const index = datetime.indexOf('.');
+            queries.push(`startTime=${encodeURIComponent(datetime.substring(0, index))}`);
         }
 
         if (this.endTime !== undefined) {
-            queries.push(`endTime=${this.endTime}`);
+            const datetime = this.endTime.toISOString();
+            const index = datetime.indexOf('.');
+            queries.push(`endTime=${encodeURIComponent(datetime.substring(0, index))}`);
         }
 
-        return `/event?${queries.join('&')}`;
+        return `/event/list?${queries.join('&')}`;
+    }
+}
+
+export class MonitorSettings {
+    constructor() {
+        this.resetLevels();
+
+        makeObservable(this, { 
+            levels: observable,
+            connectionId: observable,
+            resetLevels: action
+         });
+    }
+
+    levels!: EventLevel[];
+    connectionId: string | null = null;
+
+    resetLevels(): void {
+        this.levels = ['critical', 'error', 'warning', 'information', 'debug', 'trace'];
     }
 }

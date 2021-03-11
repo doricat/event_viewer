@@ -14,7 +14,7 @@ export function EventItem(props: { event: ApplicationEvent }) {
     return (
         <Alert variant={style} key={id.toString()}>
             <Alert.Heading>{level}</Alert.Heading>
-            <p>{message}</p>
+            <p style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>{message}</p>
             <hr />
             <p className="mb-0">{category} - {new Date(timestamp).toLocaleString()}</p>
             <div className="d-flex justify-content-end">

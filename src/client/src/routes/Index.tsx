@@ -23,7 +23,7 @@ export const Routes = () => {
             <Route path="/account/profile" component={Profile} />
             <Route path="/application" component={Application} />
             <Route path="/event" component={Event} />
-            <Route path="/monitor" Component={Monitor} />
+            <Route path="/monitor" component={Monitor} />
             <Route path="/unauthorized" component={Unauthorized} />
             <Route path={ApplicationPaths.Login} render={() => <LoginContainer component={Login} />} />
             <Route path={ApplicationPaths.LoginFailed} render={() => <LoginFailed />} />

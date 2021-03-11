@@ -6,25 +6,12 @@ import { debounce } from 'rxjs/operators';
 import { observer } from 'mobx-react';
 import { StoreContext } from '../../stores';
 import { FilterModel } from '../../models/view/event';
-
-const windowScrollTop = () => {
-    return document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop;
-};
-
-const isScrolledIntoView = (elem: HTMLHeadingElement) => {
-    const docViewTop = windowScrollTop();
-    const docViewBottom = windowScrollTop() + window.innerHeight;
-
-    const elemTop = elem.offsetTop;
-    var elemBottom = elemTop + elem.clientHeight;
-
-    return (elemBottom <= docViewBottom) && (elemTop >= docViewTop);
-};
+import { isScrolledIntoView } from '../../infrastructure/domHelper';
 
 export const EventList = observer((props: { model: FilterModel; }) => {
     const context = useContext(StoreContext);
     const [list, setList] = useState<JSX.Element[]>([]);
-    const footerElement = useRef<HTMLHeadingElement>(null);
+    const footerElement = useRef<HTMLDivElement>(null);
     const count = useRef<number>(0);
 
     useEffect(() => {
@@ -49,6 +36,11 @@ export const EventList = observer((props: { model: FilterModel; }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [context.event.events.length]);
+
+    useEffect(() => {
+        setList([]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.model.level, props.model.startTime, props.model.endTime]);
 
     let message: string | undefined = undefined;
     if (list.length === 0) {
