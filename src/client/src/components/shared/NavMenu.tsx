@@ -16,7 +16,7 @@ const MenuLink = (props: { label: string, to: string, exact?: boolean }) => (
 
 export function NavMenu() {
     return (
-        <Navbar bg="light" expand="lg">
+        <Navbar bg="light" expand="lg" fixed="top">
             <Navbar.Brand to="/" as={Link}>Event Viewer</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">

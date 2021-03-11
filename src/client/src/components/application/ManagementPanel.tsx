@@ -38,7 +38,7 @@ export const ManagementPanel = observer((props: Props) => {
                     <ListGroupItem>关联的用户：{application.subscribers.length}</ListGroupItem>
                 </ListGroup>
                 <Card.Body>
-                    <Link to={`/application/${application.id}/event`} className="btn btn-primary card-link">事件查看</Link>
+                    <Link to={`/event/summary?application=${application.id}`} className="btn btn-primary card-link">事件查看</Link>
                     <Link to={`/application/${application.id}/edit`} className="btn btn-primary card-link">编辑应用</Link>
                     <Link to={`/application/${application.id}/subscribers`} className="btn btn-primary card-link">成员管理</Link>
                     <Button variant="warning" className="card-link" onClick={() => setModal(true)}>删除应用</Button>
