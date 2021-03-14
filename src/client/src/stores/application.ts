@@ -25,7 +25,7 @@ class Store {
         });
     }
 
-    applications: Application[] = [];
+    applications: Application[] | null = null;
     creationResult: CreatedResult | undefined = undefined;
 
     loadApplications(): number {
@@ -39,8 +39,8 @@ class Store {
             }
 
             runInAction(() => {
-                this.applications.splice(0);
-                x.value.forEach(y => this.applications.push(Application.fromApiModel(y)));
+                this.applications = [];
+                x.value.forEach(y => this.applications!.push(Application.fromApiModel(y)));
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
         });
@@ -59,7 +59,7 @@ class Store {
             }
 
             runInAction(() => {
-                this.getApplication(applicationId).eventStatistics.set(level, EventStatistics.formApiModel(x.value));
+                this.getApplication(applicationId)!.eventStatistics.set(level, EventStatistics.formApiModel(x.value));
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
         });
@@ -78,7 +78,7 @@ class Store {
             }
 
             runInAction(() => {
-                this.getApplication(applicationId).update(x.value);
+                this.getApplication(applicationId)?.update(x.value);
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
         });
@@ -87,11 +87,11 @@ class Store {
     }
 
     addSubscriber(applicationId: number, userId: number): void {
-        this.getApplication(applicationId).addSubscriber(userId);
+        this.getApplication(applicationId)?.addSubscriber(userId);
     }
 
     removeSubscriber(applicationId: number, userId: number): void {
-        this.getApplication(applicationId).removeSubscriber(userId);
+        this.getApplication(applicationId)?.removeSubscriber(userId);
     }
 
     saveSubscribers(applicationId: number, subscribers: number[]): number {
@@ -102,7 +102,9 @@ class Store {
             if (x) {
                 this.rootStore.ui.setRequestSuccess(traceId);
                 const application = this.getApplication(applicationId);
-                application.subscribers = subscribers;
+                if (application) {
+                    application.subscribers = subscribers;
+                }
             } else {
                 this.rootStore.ui.setRequestFailed(traceId);
             }
@@ -125,7 +127,7 @@ class Store {
                 const application = new Application();
                 application.id = x.value.id;
                 application.fromApiModel(model);
-                this.applications.push(application);
+                this.applications!.push(application);
                 this.creationResult = x.value;
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
@@ -146,7 +148,7 @@ class Store {
 
             runInAction(() => {
                 const application = this.getApplication(applicationId);
-                application.fromApiModel(model);
+                application!.fromApiModel(model);
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
         });
@@ -165,9 +167,9 @@ class Store {
             }
 
             runInAction(() => {
-                const index = this.applications.findIndex(x => x.id === applicationId);
+                const index = this.applications!.findIndex(x => x.id === applicationId);
                 if (index !== -1) {
-                    this.applications[index].removed = true;
+                    this.applications![index].removed = true;
                 }
                 this.rootStore.ui.setRequestSuccess(traceId);
             });
@@ -176,19 +178,22 @@ class Store {
         return traceId;
     }
 
-    getApplication(applicationId: number): Application {
-        const index = this.applications.findIndex(x => x.id === applicationId);
-        if (index === -1) {
-            throw new Error();
+    getApplication(applicationId: number): Application | null {
+        if (this.applications != null) {
+            const index = this.applications.findIndex(x => x.id === applicationId);
+
+            if (index !== -1) {
+                return this.applications[index];
+            }
         }
 
-        return this.applications[index];
+        return null;
     }
 
     removeApplication(applicationId: number): void {
-        const index = this.applications.findIndex(x => x.id === applicationId);
+        const index = this.applications!.findIndex(x => x.id === applicationId);
         if (index !== -1) {
-            this.applications.splice(index, 1);
+            this.applications!.splice(index, 1);
         }
     }
 }

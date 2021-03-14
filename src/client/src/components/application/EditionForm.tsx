@@ -37,7 +37,7 @@ export const EditionForm = observer((props: Props) => {
 
     useEffect(() => {
         if (props.applicationId !== undefined) {
-            setEditionModel(() => new EditionModel(context.application.getApplication(props.applicationId!)));
+            setEditionModel(() => new EditionModel(context.application.getApplication(props.applicationId!)!));
         } else {
             setEditionModel(() => new EditionModel());
         }
