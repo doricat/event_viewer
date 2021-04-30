@@ -26,7 +26,7 @@ export const ManagementPanelContainer = observer((props: Props) => {
     const requestState = context.ui.requestStates.get(traceId);
 
     if (requestState?.success) {
-        const applications = context.application.applications.filter(x => x.id === props.applicationId);
+        const applications = context.application.applications!.filter(x => x.id === props.applicationId);
         if (applications.length < 1) {
             return (<Redirect to={'/404'} />);
         }

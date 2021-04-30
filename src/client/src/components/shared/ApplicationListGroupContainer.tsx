@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { observer } from 'mobx-react';
 import { StoreContext } from '../../stores';
+import { Loading } from '../Loading';
 
 interface Props {
     path: string;
@@ -9,6 +10,10 @@ interface Props {
 
 export const ApplicationListGroupContainer = observer((props: Props) => {
     const context = useContext(StoreContext);
+    if (context.application.applications == null) {
+        return (<Loading />);
+    }
+
     const applications: [number, string][] = [];
     context.application.applications
         .slice()

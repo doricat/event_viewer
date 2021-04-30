@@ -28,7 +28,7 @@ export const SummaryCardContainer = observer((props: Props) => {
     const requestState = context.ui.requestStates.get(traceId);
 
     if (requestState?.success) {
-        const application = context.application.getApplication(props.applicationId);
+        const application = context.application.getApplication(props.applicationId)!;
         return (<SummaryCard application={toJS(application)} level={props.level} />);
     }
 

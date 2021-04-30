@@ -8,6 +8,7 @@ import { EventBox } from '../components/monitor/EventBox';
 import { StoreContext } from '../stores';
 import { EventHelper } from '../components/event/Helper';
 import { Redirect } from 'react-router';
+import { Loading } from '../components/Loading';
 
 export const Monitor = observer((props: { location: Location; }) => {
     const context = useContext(StoreContext);
@@ -26,17 +27,21 @@ export const Monitor = observer((props: { location: Location; }) => {
     if (applicationId === -1) {
         elem = (<EventHelper />);
     } else {
-        const index = context.application.applications.findIndex(x => x.id === applicationId);
-        const accessToken = context.account.accessToken;
-        elem = index !== -1
-            ? (
-                <EventBox key={applicationId.toString()}
-                    applicationId={applicationId}
-                    settings={settings}
-                    maxEvents={200}
-                    accessToken={accessToken} />
-            )
-            : (<Redirect to="404" />);
+        if (context.application.applications == null) {
+            elem = (<Loading />);
+        } else {
+            const index = context.application.applications.findIndex(x => x.id === applicationId);
+            const accessToken = context.account.accessToken;
+            elem = index !== -1
+                ? (
+                    <EventBox key={applicationId.toString()}
+                        applicationId={applicationId}
+                        settings={settings}
+                        maxEvents={200}
+                        accessToken={accessToken} />
+                )
+                : (<Redirect to="404" />);
+        }
     }
 
     return (

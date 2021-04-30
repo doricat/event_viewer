@@ -6,6 +6,7 @@ import { ApplicationListGroup } from './ApplicationListGroup';
 import { StoreContext } from '../../stores';
 import { EventHelper } from './Helper';
 import { Redirect } from 'react-router';
+import { Loading } from '../Loading';
 
 interface Props {
     location: Location;
@@ -21,8 +22,12 @@ export const Layout = observer((props: Props) => {
     if (applicationId === -1) {
         elem = (<EventHelper />);
     } else {
-        const index = context.application.applications.findIndex(x => x.id === applicationId);
-        elem = index !== -1 ? React.createElement(props.component, { applicationId }) : (<Redirect to="404" />);
+        if (context.application.applications == null) {
+            elem = (<Loading />);
+        } else {
+            const index = context.application.applications.findIndex(x => x.id === applicationId);
+            elem = index !== -1 ? React.createElement(props.component, { applicationId }) : (<Redirect to="404" />);
+        }
     }
 
     return (
