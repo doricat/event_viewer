@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { observer } from 'mobx-react';
-import { StoreContext } from '../../stores';
 import { AuthenticationResultStatus } from '../../infrastructure/apiAuthorizationConstants';
+import { MyContext } from '../../configureStore';
 
 export const LoginCallback = observer(() => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [traceId, setTraceId] = useState(-1);
 
     const completeSignIn = () => {

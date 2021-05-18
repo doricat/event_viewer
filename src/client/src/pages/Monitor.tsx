@@ -5,13 +5,13 @@ import { MonitorSettings } from '../models/view/event';
 import { ApplicationListGroupContainer } from '../components/shared/ApplicationListGroupContainer';
 import { ApplicationListGroup } from '../components/event/ApplicationListGroup';
 import { EventBox } from '../components/monitor/EventBox';
-import { StoreContext } from '../stores';
 import { EventHelper } from '../components/event/Helper';
 import { Redirect } from 'react-router';
 import { Loading } from '../components/Loading';
+import { MyContext } from '../configureStore';
 
 export const Monitor = observer((props: { location: Location; }) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [settings] = useState(() => new MonitorSettings());
 
     useEffect(() => {

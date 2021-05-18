@@ -3,12 +3,12 @@ import { observer } from 'mobx-react';
 import { EventLevel } from '../../models/shared';
 import { MonitorSettings } from '../../models/view/event';
 import { getStyle } from '../event/styleMapping';
-import { StoreContext } from '../../stores';
+import { MyContext } from '../../configureStore';
 
 const levels: EventLevel[] = ['critical', 'error', 'warning', 'information', 'debug', 'trace'];
 
 export const LevelFilter = observer((props: { settings: MonitorSettings; applicationId: number }) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const { settings, applicationId } = props;
     const connected = settings.connectionId != null;
 

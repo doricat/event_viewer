@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { observer } from 'mobx-react';
 import { Row, Col } from 'react-bootstrap';
-import { StoreContext } from '../../stores';
 import { EventFilter } from './Filter';
 import { EventList } from './List';
 import { FilterModel } from '../../models/view/event';
+import { MyContext } from '../../configureStore';
 
 export const ListPanel = observer((props: { applicationId: number }) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [filter] = useState<FilterModel>(() => new FilterModel('all'));
     const [traceId, setTraceId] = useState(-1);
     const firstRender = useRef(true);

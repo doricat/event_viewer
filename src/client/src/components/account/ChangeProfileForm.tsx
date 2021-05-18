@@ -1,11 +1,11 @@
 import React, { useState, useContext } from 'react';
 import { observer } from 'mobx-react';
 import { Form, Button } from 'react-bootstrap';
-import { StoreContext } from '../../stores';
 import { NameChangeModel } from '../../models/view/account';
+import { MyContext } from '../../configureStore';
 
 export const ChangeProfileForm = observer(() => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const name = context.account.profile.name;
     const [traceId, setTraceId] = useState(-1);
     const [editionModel] = useState(() => new NameChangeModel(name));

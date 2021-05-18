@@ -3,12 +3,12 @@ import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 import { IdGenerator } from '../infrastructure/idGenerator';
 import { AuthorizeService, OidcSettings } from '../services/authorizeService';
 import { ApplicationName, ApplicationPaths } from '../infrastructure/apiAuthorizationConstants';
-import { Store as RootStore } from './index';
+import { RootState } from './index';
 import { AccountService } from '../services/accountService';
 import { PasswordPatchModel } from '../models/api/account';
 
 export class Store {
-    constructor(private rootStore: RootStore,
+    constructor(private rootStore: RootState,
         private authorizeService: AuthorizeService,
         private accountService: AccountService,
         private idGenerator: IdGenerator) {

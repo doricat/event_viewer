@@ -3,9 +3,9 @@ import { observer } from 'mobx-react';
 import { Button, CardColumns } from 'react-bootstrap';
 import { Application } from '../../models/entity/application';
 import { User } from '../../models/entity/account';
-import { StoreContext } from '../../stores';
 import { SubscriberCard } from './SubscriberCard';
 import { toJS } from 'mobx';
+import { MyContext } from '../../configureStore';
 
 interface Props {
     application: Application;
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const SubscriberSelector = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [traceId, setTraceId] = useState(-1);
     const [selected, setSelected] = useState<number[]>(() => [...props.application.subscribers.slice()]);
 

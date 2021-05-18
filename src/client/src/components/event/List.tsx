@@ -4,12 +4,12 @@ import { EventItem } from './Item';
 import { fromEvent, interval } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import { observer } from 'mobx-react';
-import { StoreContext } from '../../stores';
 import { FilterModel } from '../../models/view/event';
 import { isScrolledIntoView } from '../../infrastructure/domHelper';
+import { MyContext } from '../../configureStore';
 
 export const EventList = observer((props: { model: FilterModel; }) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [list, setList] = useState<JSX.Element[]>([]);
     const footerElement = useRef<HTMLDivElement>(null);
     const count = useRef<number>(0);

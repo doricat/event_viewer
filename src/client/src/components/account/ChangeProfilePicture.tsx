@@ -1,10 +1,10 @@
 import React, { useContext, useState, useRef } from 'react';
 import { observer } from 'mobx-react';
 import { Image, DropdownButton, Dropdown } from 'react-bootstrap';
-import { StoreContext } from '../../stores';
+import { MyContext } from '../../configureStore';
 
 export const ChangeProfilePicture = observer(() => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const fileInput = useRef<HTMLInputElement>(null);
     const [traceId, setTraceId] = useState(-1);
     const avatar = context.account.profile.avatar;

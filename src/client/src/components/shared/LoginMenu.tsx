@@ -1,12 +1,12 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
-import { StoreContext } from '../../stores';
 import { NavDropdown, Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { ApplicationPaths } from '../../infrastructure/apiAuthorizationConstants';
+import { MyContext } from '../../configureStore';
 
 export const LoginMenu = observer(() => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const isAuthenticated = context.account.isAuthenticated;
     const name = context.account.profile.name;
 

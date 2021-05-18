@@ -1,16 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { observer } from 'mobx-react';
 import { LoadFailed } from '../LoadFailed';
-import { StoreContext } from '../../stores';
 import { Loading } from '../Loading';
 import { SubscriberSelector } from './SubscriberSelector';
+import { MyContext } from '../../configureStore';
 
 interface Props {
     applicationId: number;
 }
 
 export const SubscriberSelectorContainer = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [applicationTraceId, setApplicationTraceId] = useState(-1);
     const [usersTraceId, setUsersTraceId] = useState(-1);
 

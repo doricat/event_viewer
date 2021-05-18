@@ -3,10 +3,10 @@ import { observer } from 'mobx-react';
 import { Row, Col } from 'react-bootstrap';
 import { ApplicationListGroupContainer } from '../shared/ApplicationListGroupContainer';
 import { ApplicationListGroup } from './ApplicationListGroup';
-import { StoreContext } from '../../stores';
 import { EventHelper } from './Helper';
 import { Redirect } from 'react-router';
 import { Loading } from '../Loading';
+import { MyContext } from '../../configureStore';
 
 interface Props {
     location: Location;
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const Layout = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const params = new URLSearchParams(props.location.search);
     const applicationId = Number(params.get('application') ?? '-1');
     let elem: JSX.Element;

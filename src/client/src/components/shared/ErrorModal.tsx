@@ -1,10 +1,10 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { Modal, Alert } from 'react-bootstrap';
-import { StoreContext } from '../../stores';
+import { MyContext } from '../../configureStore';
 
 export const ErrorModal = observer(() => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [show, setShow] = useState(false);
     const [message, setMessage] = useState<string>();
     const length = context.error.exceptionMessage.length;

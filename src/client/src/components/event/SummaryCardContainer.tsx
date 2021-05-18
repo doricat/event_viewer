@@ -1,8 +1,8 @@
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import React, { useState, useEffect, useContext } from 'react';
+import { MyContext } from '../../configureStore';
 import { EventLevel } from '../../models/shared';
-import { StoreContext } from '../../stores';
 import { LoadFailed } from '../LoadFailed';
 import { Loading } from '../Loading';
 import { SummaryCard } from './SummaryCard';
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const SummaryCardContainer = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [traceId, setTraceId] = useState(-1);
 
     const refreshData = () => {

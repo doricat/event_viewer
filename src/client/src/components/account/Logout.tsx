@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { observer } from 'mobx-react';
-import { StoreContext } from '../../stores';
 import { AuthenticationResultStatus, QueryParameterNames } from '../../infrastructure/apiAuthorizationConstants';
 import { getReturnUrl } from '../../infrastructure/urlHelper';
+import { MyContext } from '../../configureStore';
 
 export const Logout = observer(() => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [state, setState] = useState(-1);
 
     const signOut = () => {

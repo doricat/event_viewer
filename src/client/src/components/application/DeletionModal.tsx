@@ -1,8 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { Modal, Button } from 'react-bootstrap';
-import { StoreContext } from '../../stores';
 import { ApiResultAlert } from '../ApiResultAlert';
+import { MyContext } from '../../configureStore';
 
 interface Props {
     applicationId: number;
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const DeletionModal = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [traceId, setTraceId] = useState(-1);
     const [show, setShow] = useState(false);
     const [message, setMessage] = useState('操作成功。');

@@ -1,9 +1,9 @@
 import React, { useContext, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { Router } from 'react-router';
-import { StoreContext } from '../stores';
 import { History, Location } from 'history';
 import { isEqualWith } from 'lodash';
+import { MyContext } from '../configureStore';
 
 interface Props {
     children: React.ReactNode;
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const ConnectedRouter = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const inTimeTravelling = useRef(false);
 
     const handleLocationChange = (location: Location, action: string, isFirstRendering = false) => {

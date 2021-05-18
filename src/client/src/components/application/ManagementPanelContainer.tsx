@@ -1,17 +1,17 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { observer } from 'mobx-react';
 import { LoadFailed } from '../LoadFailed';
-import { StoreContext } from '../../stores';
 import { Loading } from '../Loading';
 import { ManagementPanel } from './ManagementPanel';
 import { Redirect } from 'react-router';
+import { MyContext } from '../../configureStore';
 
 interface Props {
     applicationId: number;
 }
 
 export const ManagementPanelContainer = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [traceId, setTraceId] = useState(-1);
 
     const loadApplication = () => {

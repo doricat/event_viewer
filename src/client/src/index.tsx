@@ -2,16 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { App } from './App';
 import reportWebVitals from './reportWebVitals';
-import { StoreContext, store, history } from './stores';
+import { MyContext, store, history } from './configureStore';
 import { ConnectedRouter } from './components/ConnectedRouter';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 ReactDOM.render(
-    <StoreContext.Provider value={store}>
+    <MyContext.Provider value={store}>
         <ConnectedRouter history={history}>
             <App />
         </ConnectedRouter>
-    </StoreContext.Provider>,
+    </MyContext.Provider>,
     document.getElementById('root')
 );
 

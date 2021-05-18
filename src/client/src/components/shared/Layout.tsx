@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
 import React, { useEffect, useContext } from 'react';
-import { StoreContext } from '../../stores';
+import { MyContext } from '../../configureStore';
 import { ErrorModal } from './ErrorModal';
 import { NavMenu } from './NavMenu';
 
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const Layout = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
 
     useEffect(() => {
         if (context.account.isAuthenticated) {

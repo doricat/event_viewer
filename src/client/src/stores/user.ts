@@ -2,10 +2,10 @@ import { action, makeObservable, observable, runInAction } from 'mobx';
 import { IdGenerator } from '../infrastructure/idGenerator';
 import { User } from '../models/entity/account';
 import { UserService } from '../services/userService';
-import { Store as RootStore } from './index';
+import { RootState } from './index';
 
 class Store {
-    constructor(private rootStore: RootStore,
+    constructor(private rootStore: RootState,
         private service: UserService,
         private idGenerator: IdGenerator) {
         makeObservable(this, {

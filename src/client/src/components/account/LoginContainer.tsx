@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { observer } from 'mobx-react';
-import { StoreContext } from '../../stores';
+import { MyContext } from '../../configureStore';
 
 interface Props {
     component: () => JSX.Element;
 }
 
 export const LoginContainer = observer((props: Props) => {
-    const context = useContext(StoreContext);
+    const context = useContext(MyContext);
     const [traceId, setTraceId] = useState(-1);
 
     const loadSettings = () => {

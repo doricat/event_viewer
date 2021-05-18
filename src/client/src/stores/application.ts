@@ -2,13 +2,13 @@ import { ApplicationService } from '../services/applicationService';
 import { IdGenerator } from '../infrastructure/idGenerator';
 import { action, makeObservable, observable, runInAction } from 'mobx';
 import { Application, EventStatistics } from '../models/entity/application';
-import { Store as RootStore } from './index';
+import { RootState } from './index';
 import { ApplicationEditionModel } from '../models/api/application';
 import { EventLevel } from '../models/shared';
 import { CreatedResult } from '../models/apiResult';
 
 class Store {
-    constructor(private rootStore: RootStore,
+    constructor(private rootStore: RootState,
         private service: ApplicationService,
         private idGenerator: IdGenerator) {
         makeObservable(this, {
